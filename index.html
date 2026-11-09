@@ -243,7 +243,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
   <div class="toolbar">
     <div class="now" id="periodInfo"></div>
     <div class="btns noprint">
-      <button class="btn" id="exportBtn" onclick="exportJson()">Copy data</button>
+      <button class="btn" id="exportBtn" onclick="exportJson()">Export data</button>
       <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
       <button class="btn primary" id="pdfBtn" onclick="exportPdf()">Export PDF</button>
       <button class="btn" id="driveBtn" onclick="driveSave(false)" title="Save a timestamped backup to your Google Drive">Save to Google Drive</button>
@@ -619,12 +619,21 @@ async function driveRestore(){
 }
 if(driveOn)setDriveMsg('Auto-save to Google Drive is on','good');
 
-function exportJson(){
-  const txt=JSON.stringify(S);
+async function exportJson(){
   const btn=document.getElementById('exportBtn');
-  const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy data',2000)};
-  const fallback=()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){btn.textContent='Copy failed'}ta.remove()};
-  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done).catch(fallback)}else fallback();
+  const idle=()=>setTimeout(()=>btn.textContent='Export data',2500);
+  let dl=null;
+  try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){dl=null}
+  if(!dl){btn.textContent='Export not available here';idle();return}
+  const txt=JSON.stringify(S,null,2);
+  const bytes=new TextEncoder().encode(txt);
+  const name=`${(S.project||'Taormina_IPT').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_EV_Data_${new Date().toISOString().slice(0,10)}.json`;
+  try{
+    const res=await dl.save({filename:name,data:bytes});
+    btn.textContent=res&&res.status==='saved'?'Exported':'Export data';
+  }catch(e){
+    btn.textContent=e&&e.code==='declined'?'Export cancelled':'Could not export';
+  }finally{idle()}
 }
 
 document.getElementById('importFile').addEventListener('change',e=>{
