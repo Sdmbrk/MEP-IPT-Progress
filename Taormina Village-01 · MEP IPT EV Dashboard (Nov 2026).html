@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Taormina Village-01 · MEP IPT Progress · EV Dashboard (Nov 2026)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --navy:#0f2b46; --navy2:#1d4e7a; --teal:#0d9488; --teal-l:#ccfbf1; --teal-d:#0f766e;
+  --amber:#d97706; --amber-l:#fef3c7; --red:#dc2626; --red-l:#fee2e2;
+  --green:#16a34a; --green-l:#dcfce7; --slate:#94a3b8; --slate-d:#475569;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f1f5f9; --card:#ffffff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#e9f0f7 0%,#f5f8fb 260px,#f5f8fb 100%);color:var(--ink);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+main{max-width:1240px;margin:0 auto;padding:22px 24px 40px}
+
+/* header */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,#1f6f8b 100%);color:#fff;border-radius:18px;
+  padding:22px 28px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;
+  box-shadow:0 10px 30px rgba(15,43,70,.25)}
+.hero .title{text-align:center}
+.hero h1{margin:0;font-size:25px;font-weight:700;letter-spacing:.2px}
+.hero .sub{margin-top:4px;font-size:12px;letter-spacing:2.4px;text-transform:uppercase;opacity:.85}
+.hero .chips{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;font-size:12px;min-width:0}
+.chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:4px 11px;white-space:normal}
+.chip b{font-weight:700}
+.chip.alert{background:#f59e0b;border-color:#f59e0b;color:#1f1300;font-weight:700}
+
+/* cards */
+.card{background:var(--card);border:1px solid #e6ecf3;border-radius:16px;padding:18px 20px;margin-bottom:16px;
+  box-shadow:0 1px 2px rgba(15,23,42,.04),0 6px 18px rgba(15,23,42,.05)}
+.card h2{margin:0;font-size:15px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:9px}
+.card h2::before{content:"";width:9px;height:9px;border-radius:3px;background:linear-gradient(135deg,var(--teal),#34d399)}
+.card .hint{font-size:12px;color:var(--muted);margin:4px 0 14px 18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid21{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
+@media(max-width:920px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid21{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.hero .chips{justify-self:center;align-items:center}.hero .title{order:-1}}
+
+/* period selector */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pbtn{position:relative;overflow:hidden;background:#fff;border:1px solid #d7e0ea;border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer;
+  font-family:inherit;transition:transform .15s ease,box-shadow .15s ease,background .2s}
+.pbtn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,43,70,.12)}
+.pbtn b{display:block;font-size:16px;color:var(--navy)}
+.pbtn span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.pbtn .meter{height:5px;border-radius:4px;background:#e6edf4;margin-top:10px;overflow:hidden}
+.pbtn .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),#34d399)}
+.pbtn.active{background:linear-gradient(135deg,var(--navy2),var(--teal));border-color:transparent;color:#fff;box-shadow:0 8px 22px rgba(13,148,136,.32)}
+.pbtn.active b,.pbtn.active span{color:#fff}
+.pbtn.active span{opacity:.9}
+.pbtn.active .meter{background:rgba(255,255,255,.3)}
+.pbtn.active .meter i{background:#fff}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.toolbar .now{font-size:13px;color:var(--slate-d)}
+.toolbar .now b{color:var(--navy)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button.btn{font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;border:1px solid #cbd5e1;background:#fff;color:var(--navy);cursor:pointer;transition:background .15s}
+button.btn:hover{background:#f1f5f9}
+button.btn.primary{background:linear-gradient(135deg,var(--navy2),var(--teal));border-color:transparent;color:#fff}
+button.btn.primary:hover{filter:brightness(1.05)}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.ev-card{padding:14px 16px}
+.ev-card h2{margin-bottom:10px}
+.evnote{font-size:12px;color:var(--muted);margin-top:10px}
+.kpi{border-radius:12px;padding:11px 13px;color:#fff;position:relative;overflow:hidden;min-height:0;box-shadow:0 6px 18px rgba(15,23,42,.12)}
+.kpi::after{content:"";position:absolute;right:-18px;top:-18px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.12)}
+.kpi .l{font-size:11px;letter-spacing:.6px;text-transform:uppercase;opacity:.9;font-weight:600}
+.kpi .v{font-size:19px;font-weight:700;margin-top:4px;letter-spacing:-.2px;white-space:nowrap}
+.kpi .s{font-size:11px;opacity:.92;margin-top:2px}
+.k-navy{background:linear-gradient(135deg,#0f2b46,#1d4e7a)}
+.k-slate{background:linear-gradient(135deg,#64748b,#94a3b8)}
+.k-teal{background:linear-gradient(135deg,#0f766e,#14b8a6)}
+.k-amber{background:linear-gradient(135deg,#b45309,#f59e0b)}
+.k-good{background:linear-gradient(135deg,#15803d,#22c55e)}
+.k-warn{background:linear-gradient(135deg,#b45309,#fbbf24)}
+.k-bad{background:linear-gradient(135deg,#b91c1c,#f87171)}
+
+/* tables */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;text-align:right;padding:9px 10px;background:#f8fafc;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 10px;border-bottom:1px solid #eef2f6;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:#f8fbfd}
+.tbl tr.total td{font-weight:700;background:#f1f6fb;color:var(--navy)}
+.tbl td.ev{background:var(--teal-l);color:var(--teal-d);font-weight:700}
+.tbl th.ev{color:var(--teal-d)}
+.wrap{overflow-x:auto}
+
+/* inputs */
+.field{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);font-weight:600}
+.inp{width:100%;max-width:170px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;text-align:right;color:var(--ink);background:#fff;font-family:inherit;font-variant-numeric:tabular-nums}
+.inp:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.18)}
+.tbl .inp{width:100%;max-width:118px;padding:7px 9px;font-size:13px}
+.evbox{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.evbox .out{background:var(--teal-l);border-radius:12px;padding:10px 16px;color:var(--teal-d)}
+.evbox .out small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;opacity:.8}
+.evbox .out b{font-size:20px}
+
+/* pills & bars */
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;min-width:48px;text-align:center}
+.pill.good{background:var(--green-l);color:#166534}
+.pill.warn{background:var(--amber-l);color:#92400e}
+.pill.bad{background:var(--red-l);color:#991b1b}
+.pill.none{background:#f1f5f9;color:var(--muted)}
+.status{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.status.good{background:var(--green-l);color:#166534}
+.status.warn{background:var(--amber-l);color:#92400e}
+.status.bad{background:var(--red-l);color:#991b1b}
+.bar{height:8px;border-radius:6px;background:#e7edf3;overflow:hidden;min-width:110px}
+.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--teal),#34d399)}
+.bar i.over{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+.cellbar{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+
+/* chart */
+.chartbox svg{display:block;width:100%;height:auto}
+.chartbox svg text{font-family:inherit;fill:var(--slate-d)}
+.chartbox svg text.v{font-size:12px;font-weight:700;fill:var(--ink)}
+.chartbox svg text.l{font-size:11px;fill:var(--muted)}
+.legend{display:flex;gap:16px;margin-top:6px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+.note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6}
+.note ul{margin:6px 0 0;padding-left:18px}
+.foot{text-align:center;color:#94a3b8;font-size:11.5px;margin-top:8px}
+
+
+/* PDF report (rendered off-screen for export) */
+.rp-wrap{position:fixed;left:-10000px;top:0;width:794px;height:1123px;overflow:hidden;background:#fff}
+.rp-page{width:794px;height:1123px;padding:26px 30px 20px;background:#fff;color:#1d2433;font-family:Helvetica,Arial,"Liberation Sans",sans-serif;font-size:10.4px;line-height:1.3;display:flex;flex-direction:column;gap:7px;box-sizing:border-box;overflow:hidden}
+.rp-head{background:#1d3b5c;color:#fff;border-radius:8px;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.rp-title{text-align:center}
+.rp-title h1{margin:0;font-size:21px;font-weight:700;white-space:nowrap}
+.rp-title .sub{font-size:12.5px;opacity:.9;margin-top:3px}
+.rp-meta{text-align:right;font-size:10px;line-height:1.45}
+.rp-meta div{white-space:normal}
+.rp-status{display:inline-block;color:#fff;font-weight:700;padding:2px 9px;border-radius:9px;font-size:10px;margin-top:3px}
+.rp-status.good{background:#1f7a4d}.rp-status.bad{background:#b42318}
+.rp-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.rp-kpi{border:1px solid #e4e7ec;border-radius:7px;padding:7px 8px;border-top:3px solid #9aa7b8}
+.rp-kpi .l{font-size:8.6px;color:#667085;text-transform:uppercase;letter-spacing:.3px}
+.rp-kpi .v{font-size:15px;font-weight:700;margin-top:2px}
+.rp-kpi .s{font-size:9px;color:#667085;margin-top:1px}
+.rp-kpi.navy{border-top-color:#1d3b5c}.rp-kpi.slate{border-top-color:#9aa7b8}.rp-kpi.teal{border-top-color:#0d9488}
+.rp-kpi.amber{border-top-color:#d9822b}.rp-kpi.good{border-top-color:#1f7a4d}.rp-kpi.warn{border-top-color:#b7791f}.rp-kpi.bad{border-top-color:#b42318}.rp-kpi.neutral{border-top-color:#2f5d8c}
+.rp-kpi.good .v{color:#1f7a4d}.rp-kpi.bad .v{color:#b42318}
+.rp-note{font-size:9px;color:#667085}
+.rp-row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.rp-card{border:1px solid #e4e7ec;border-radius:7px;padding:6px 8px}
+.rp-card h2{font-size:11.5px;margin:0 0 2px;color:#1d3b5c}
+.rp-card .cap{font-size:8.8px;color:#667085;margin-bottom:2px}
+.rp-page svg{display:block}
+.rp-page svg text{font-family:Helvetica,Arial,sans-serif;fill:#1d2433}
+.rp-page svg text.v{font-size:8.6px;font-weight:700}
+.rp-page svg text.l{font-size:8px;fill:#667085}
+.rp-tbl{width:100%;border-collapse:collapse;font-size:9.5px}
+.rp-tbl th{background:#f3f6fa;color:#475467;font-weight:700;text-align:right;padding:3px 5px;border-bottom:1px solid #d0d5dd;font-size:8.6px}
+.rp-tbl td{padding:3px 5px;border-bottom:1px solid #eef0f3;text-align:right;white-space:nowrap}
+.rp-tbl th:first-child,.rp-tbl td:first-child{text-align:left}
+.rp-tbl tr.tot td{font-weight:700;background:#f7f9fb}
+.rp-pill{display:inline-block;padding:1px 6px;border-radius:8px;font-weight:700;font-size:9px;color:#fff}
+.rp-pill.good{background:#1f7a4d}.rp-pill.warn{background:#b7791f}.rp-pill.bad{background:#b42318}.rp-pill.none{background:#98a2b3}
+.rp-issue{display:grid;grid-template-columns:40px 1fr;gap:5px;padding:3px 0;border-bottom:1px dashed #e4e7ec;font-size:9.2px}
+.rp-issue:last-child{border-bottom:none}
+.rp-tag{font-size:7.8px;font-weight:700;color:#fff;border-radius:4px;padding:2px 0;text-align:center;height:14px}
+.rp-tag.red{background:#b42318}.rp-tag.amb{background:#b7791f}.rp-tag.blu{background:#2f5d8c}.rp-tag.grn{background:#1f7a4d}
+.rp-act{margin:0;padding-left:15px;font-size:9.2px}
+.rp-act li{margin-bottom:3px}
+.rp-foot{margin-top:auto;border-top:1px solid #e4e7ec;padding-top:4px;font-size:8.2px;color:#667085;display:flex;justify-content:space-between;gap:10px}
+
+[hidden]{display:none!important}
+.chip-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.chip-btn:hover{background:rgba(255,255,255,.24)}
+.setrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+/* key terms */
+.terms{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.term-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;border-top:3px solid var(--c,#94a3b8)}
+.term-box .tt{font-weight:700;color:var(--navy);font-size:13px}
+.term-box .tf{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;color:var(--teal-d);margin:4px 0 6px}
+.term-box .tv{font-size:17px;font-weight:700;color:var(--ink)}
+.term-box .tm{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.45}
+@media(max-width:920px){.terms{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.terms{grid-template-columns:1fr}}
+/* BAC / EAC explanation (legacy) */
+.defs{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.def{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.def .term{font-weight:700;color:var(--navy);font-size:14px}
+.def .eq{font-family:ui-monospace,Consolas,"Courier New",monospace;background:#fff;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:12.5px;color:var(--teal-d)}
+.def .val{font-size:13px;color:var(--ink);margin:4px 0}
+.def .val b{color:var(--navy)}
+.def p{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+@media(max-width:920px){.defs{grid-template-columns:1fr}}
+@media print{.btns,.seg,.inp,button{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <div></div>
+  <div class="title">
+    <h1 id="projName">Taormina Village-01</h1>
+    <div class="sub">MEP IPT Progress</div>
+  </div>
+  <div class="chips">
+    <span class="chip">IPT November 2026</span>
+    <span class="chip" id="periodChip"></span>
+    <button class="chip-btn noprint" onclick="toggleSettings()">Project settings</button>
+  </div>
+</header>
+
+<div style="height:16px"></div>
+
+<section class="card" id="settingsCard" hidden>
+  <h2>Project settings</h2>
+  <div class="hint">Change the project name shown in the header, the PDF report and the file name</div>
+  <div class="setrow">
+    <label class="field" style="flex:1;max-width:420px">Project name
+      <input class="inp" type="text" id="projInput" maxlength="80" style="max-width:none;text-align:left">
+    </label>
+    <div class="btns">
+      <button class="btn primary" onclick="saveProject()">Save</button>
+      <button class="btn" onclick="toggleSettings()">Cancel</button>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Reporting period</h2>
+  <div class="hint">Select the 10-day period being reported. PV updates automatically.</div>
+  <div class="seg">
+    <button class="pbtn" data-p="1" onclick="setPeriod(1)"><b>1–10 Nov</b><span>Planned value 33.3%</span><div class="meter"><i style="width:33.3%"></i></div></button>
+    <button class="pbtn" data-p="2" onclick="setPeriod(2)"><b>11–20 Nov</b><span>Planned value 66.7%</span><div class="meter"><i style="width:66.7%"></i></div></button>
+    <button class="pbtn" data-p="3" onclick="setPeriod(3)"><b>21–30 Nov</b><span>Planned value 100%</span><div class="meter"><i style="width:100%"></i></div></button>
+  </div>
+  <div class="toolbar">
+    <div class="now" id="periodInfo"></div>
+    <div class="btns noprint">
+      <button class="btn" id="exportBtn" onclick="exportJson()">Copy data</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <button class="btn primary" id="pdfBtn" onclick="exportPdf()">Export PDF</button>
+      <button class="btn" id="driveBtn" onclick="driveSave(false)" title="Save a timestamped backup to your Google Drive">Save to Google Drive</button>
+      <button class="btn" onclick="driveRestore()" title="Load the latest Google Drive backup (replaces the data on this page)">Restore from Drive</button>
+      <span id="driveMsg" style="font-size:12px;font-weight:600;align-self:center"></span>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </div>
+</section>
+
+<section class="card ev-card">
+  <h2>Earned value metrics</h2>
+  <div class="kpis" id="kpis"></div>
+  <div class="evnote" id="evNote"></div>
+</section>
+
+<div style="height:16px"></div>
+
+<div class="grid21">
+  <section class="card">
+    <h2>Earned value trend, MEP combined</h2>
+    <div class="hint">Planned value, earned value and actual cost in AED</div>
+    <div class="chartbox" id="chart"></div>
+  </section>
+  <section class="card">
+    <h2>Spend by cost type</h2>
+    <div class="hint">Bar colour turns amber once spend runs ahead of the time elapsed (33.3%)</div>
+    <div class="wrap" id="catTable"></div>
+  </section>
+</div>
+
+
+
+<div class="grid2">
+  <section class="card">
+    <h2>IPT budget, November 2026</h2>
+    <div class="hint">Planned cost by activity (materials, MGC + manpower, subcontractor)</div>
+    <div class="wrap"><table class="tbl">
+      <thead><tr><th>Activity</th><th>Materials</th><th>MGC + Manpower</th><th>Subcontractor</th><th>IPT budget</th></tr></thead>
+      <tbody id="budgetBody"></tbody>
+    </table></div>
+  </section>
+  <section class="card">
+    <h2>Actual cost, MEP combined</h2>
+    <div class="hint">Cumulative per 10-day period, from the cost sheet</div>
+    <div class="wrap"><table class="tbl">
+      <thead><tr><th>Cost type</th><th>1–10 Nov</th><th>11–20 Nov</th><th>21–30 Nov</th></tr></thead>
+      <tbody id="actBody"></tbody>
+    </table></div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Measured progress</h2>
+  <div class="hint">Enter the site-measured cumulative % complete for MEP combined to replace the default EV rule</div>
+  <div class="evbox">
+    <label class="field">Measured % complete
+      <input class="inp" type="number" min="0" max="100" step="0.1" placeholder="Blank = PV %" data-path="pct">
+    </label>
+    <div class="out"><small>EV % used</small><b id="evUsed">—</b></div>
+  </div>
+  <div class="note">Blank means EV = PV, following the rule EV = 1/3 of IPT for period 1. SPI reads 1.00 until a measured % is entered.</div>
+</section>
+
+<section class="card">
+  <h2>Understanding the terms</h2>
+  <div class="hint">What each figure means, and how it is calculated</div>
+  <div class="terms">
+    <div class="term-box" style="--c:#0f2b46">
+      <div class="tt">BAC · Budget</div>
+      <div class="tf">BAC = Σ all activity costs</div>
+      <div class="tv" id="t-bac">—</div>
+      <div class="tm">Total planned cost of the IPT. The baseline for everything else.</div>
+    </div>
+    <div class="term-box" style="--c:#94a3b8">
+      <div class="tt">PV · Planned Value</div>
+      <div class="tf">PV = BAC × planned %</div>
+      <div class="tv" id="t-pv">—</div>
+      <div class="tm">Value of work that should be done by this period.</div>
+    </div>
+    <div class="term-box" style="--c:#0d9488">
+      <div class="tt">EV · Earned Value</div>
+      <div class="tf">EV = BAC × measured %</div>
+      <div class="tv" id="t-ev">—</div>
+      <div class="tm">Value of work actually completed. Uses PV until you enter a measured %.</div>
+    </div>
+    <div class="term-box" style="--c:#d97706">
+      <div class="tt">AC · Actual Cost</div>
+      <div class="tf">AC = total spend to date</div>
+      <div class="tv" id="t-ac">—</div>
+      <div class="tm">Money actually spent on the IPT up to this period.</div>
+    </div>
+    <div class="term-box" id="box-spi" style="--c:#16a34a">
+      <div class="tt">SPI · Schedule</div>
+      <div class="tf">SPI = EV ÷ PV</div>
+      <div class="tv" id="t-spi">—</div>
+      <div class="tm">1.00 = on schedule. Below 1.00 = behind plan.</div>
+    </div>
+    <div class="term-box" id="box-cpi" style="--c:#16a34a">
+      <div class="tt">CPI · Cost</div>
+      <div class="tf">CPI = EV ÷ AC</div>
+      <div class="tv" id="t-cpi">—</div>
+      <div class="tm">1.00 = spend matches value earned. Below 1.00 = overspending.</div>
+    </div>
+    <div class="term-box" style="--c:#0f2b46">
+      <div class="tt">EAC · Forecast Cost</div>
+      <div class="tf">EAC = BAC ÷ CPI</div>
+      <div class="tv" id="t-eac">—</div>
+      <div class="tm">Forecast total cost of the IPT if the current CPI continues.</div>
+    </div>
+    <div class="term-box" style="--c:#0f2b46">
+      <div class="tt">VAC · Variance</div>
+      <div class="tf">VAC = BAC − EAC</div>
+      <div class="tv" id="t-vac">—</div>
+      <div class="tm">Negative = forecast overrun against the budget.</div>
+    </div>
+  </div>
+</section>
+
+<div class="note" style="margin-top:4px">
+  <b>Method.</b> PV = IPT budget × planned cumulative %. EV = IPT budget × measured % complete (defaults to PV %). AC = cumulative actual cost.
+  SPI = EV ÷ PV · CPI = EV ÷ AC · SV = EV − PV · CV = EV − AC · EAC = BAC ÷ CPI · VAC = BAC − EAC.
+  Colour: green at 1.00 or above, amber from 0.90 to 0.99, red below 0.90. Data is kept in this browser only; use Copy data to keep a backup.
+</div>
+
+</main>
+
+<div id="rpHost"></div>
+<script>
+const KEY='taormina-ipt-ev-mep-v2';
+const TRADES=[{k:'hvac',n:'HVAC (V)'},{k:'elec',n:'Electrical (X)'},{k:'plumb',n:'Plumbing (Y)'}];
+const CATS=[{k:'mat',n:'Materials'},{k:'mgc',n:'MGC + Manpower'},{k:'sub',n:'Subcontractor'}];
+const PERIODS=[{label:'1–10 Nov',pv:1/3},{label:'11–20 Nov',pv:2/3},{label:'21–30 Nov',pv:1}];
+const zero=()=>({mat:0,mgc:0,sub:0});
+const DEFAULT={
+  v:2,
+  project:'Taormina Village-01',
+  period:1,
+  cutoff:9,
+  budget:{
+    hvac:{mat:24553,mgc:20088,sub:0},
+    elec:{mat:182972,mgc:95000,sub:128632},
+    plumb:{mat:408918,mgc:75000,sub:83000}
+  },
+  actual:{1:{mat:92058,mgc:49296,sub:41440},2:zero(),3:zero()},
+  pct:''
+};
+let S=load();
+let cur=1;
+
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function valid(r){return r&&r.v===2&&r.budget&&r.actual&&'pct' in r}
+function load(){
+  try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(valid(r)){if(!r.period)r.period=1;if(!r.cutoff)r.cutoff=9;if(!r.project)r.project='Taormina Village-01';return r}}catch(e){}
+  return clone(DEFAULT);
+}
+const DRIVE_NAME='Taormina_IPT_EV_Backup';
+const DRIVE_GAP=15*60*1000;
+let driveOn=localStorage.getItem('taormina-drive-on')==='1';
+let driveTimer=null, driveBusy=false, driveDirty=false, driveLast=0;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  if(driveOn){driveDirty=true;scheduleDrive()}
+}
+function scheduleDrive(){
+  if(!driveOn||!driveDirty)return;
+  clearTimeout(driveTimer);
+  const wait=Math.max(5000,DRIVE_GAP-(Date.now()-driveLast));
+  driveTimer=setTimeout(()=>{if(driveBusy){scheduleDrive();return}driveSave(true)},wait);
+}
+function getPath(o,p){return p.split('.').reduce((a,k)=>(a==null?undefined:a[k]),o)}
+function setPath(o,p,v){const k=p.split('.');let x=o;for(let i=0;i<k.length-1;i++)x=x[k[i]];x[k[k.length-1]]=v}
+const num=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
+const fmt=n=>(n==null||!isFinite(n))?'—':Math.round(n).toLocaleString('en-US');
+const aed=n=>'AED '+fmt(n);
+const sgn=n=>(n<0?'−':'+')+fmt(Math.abs(n));
+const pillFor=v=>v==null?'<span class="pill none">—</span>':`<span class="pill ${v>=1?'good':v>=0.9?'warn':'bad'}">${v.toFixed(2)}</span>`;
+const pctOf=(a,b)=>b>0?(a/b*100).toFixed(1)+'%':'—';
+const tile=(cls,l,v,s)=>`<div class="kpi ${cls}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+
+const bacTrade=t=>CATS.reduce((s,c)=>s+num(S.budget[t][c.k]),0);
+const bacTotal=()=>TRADES.reduce((s,t)=>s+bacTrade(t.k),0);
+const catBudget=c=>TRADES.reduce((s,t)=>s+num(S.budget[t.k][c.k]),0);
+const acCat=c=>{let s=0;for(let q=1;q<=cur;q++)s+=num(S.actual[q][c.k]);return s};
+const acTotal=()=>CATS.reduce((s,c)=>s+acCat(c),0);
+
+function metrics(pv){
+  const bac=bacTotal();
+  const raw=S.pct;
+  const evp=(raw===''||raw==null)?pv:num(raw)/100;
+  const pvT=bac*pv, ev=bac*evp, ac=acTotal();
+  const spi=pvT>0?ev/pvT:null;
+  const cpi=ac>0?ev/ac:null;
+  return {bac,pv:pvT,ev,ac,spi,cpi,sv:ev-pvT,cv:ev-ac,evp,
+    eac:cpi?bac/cpi:null,vac:cpi?bac-bac/cpi:null};
+}
+
+function drawChart(m){
+  const W=560,H=290,pad={l:58,r:14,t:26,b:40};
+  const max=Math.max(1,m.pv,m.ev,m.ac)*1.18;
+  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
+  const series=[['PV','#94a3b8',m.pv],['EV','#0d9488',m.ev],['AC (actual)','#f59e0b',m.ac]];
+  const bw=78;
+  let g='';
+  for(let i=0;i<=4;i++){
+    const v=max*i/4, y=pad.t+ih-(v/max)*ih;
+    g+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e8eef4" ${i===0?'stroke-width="1.5"':''}/>`;
+    g+=`<text x="${pad.l-8}" y="${(y+4).toFixed(1)}" text-anchor="end">${Math.round(v/1000)}k</text>`;
+  }
+  const gap=(iw-series.length*bw)/(series.length+1);
+  series.forEach((s,j)=>{
+    const v=s[2], h=(v/max)*ih, x=pad.l+gap+j*(bw+gap), y=pad.t+ih-h;
+    g+=`<defs><linearGradient id="g${j}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${s[1]}"/><stop offset="100%" stop-color="${s[1]}" stop-opacity=".55"/></linearGradient></defs>`;
+    g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${Math.max(h,0).toFixed(1)}" rx="8" fill="url(#g${j})"><title>${s[0]}: AED ${fmt(v)}</title></rect>`;
+    g+=`<text class="v" x="${(x+bw/2).toFixed(1)}" y="${(y-8).toFixed(1)}" text-anchor="middle">${fmt(v)}</text>`;
+    g+=`<text class="l" x="${(x+bw/2).toFixed(1)}" y="${H-pad.b+20}" text-anchor="middle">${s[0]}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="PV, EV and AC for MEP combined">${g}</svg>
+  <div class="legend">${series.map(s=>`<span><i style="background:${s[1]}"></i>${s[0]}</span>`).join('')}</div>`;
+}
+
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function applyProject(){
+  const name=S.project||'Taormina Village-01';
+  document.getElementById('projName').textContent=name;
+  document.title=`${name} · MEP IPT Progress · EV Dashboard (Nov 2026)`;
+}
+function toggleSettings(){
+  const c=document.getElementById('settingsCard');
+  c.hidden=!c.hidden;
+  if(!c.hidden){const i=document.getElementById('projInput');i.value=S.project||'Taormina Village-01';i.focus();i.select();}
+}
+function saveProject(){
+  const v=document.getElementById('projInput').value.trim();
+  S.project=v||'Taormina Village-01';
+  save(); applyProject(); toggleSettings(); render();
+}
+document.getElementById('projInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter')saveProject();
+  if(e.key==='Escape')toggleSettings();
+});
+
+function setPeriod(n){S.period=n;save();render()}
+
+function render(){
+  cur=S.period||1;
+  const pv=PERIODS[cur-1].pv;
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('active',Number(b.dataset.p)===cur));
+  document.getElementById('periodInfo').innerHTML=`Selected: <b>Period ${cur}</b> · ${PERIODS[cur-1].label} · PV <b>${(pv*100).toFixed(1)}%</b>`;
+  document.getElementById('periodChip').innerHTML=`Period ${cur} · PV <b>${(pv*100).toFixed(1)}%</b>`;
+
+  TRADES.forEach(t=>document.getElementById('bac-'+t.k).textContent=fmt(bacTrade(t.k)));
+  CATS.forEach(c=>document.getElementById('budcat-'+c.k).textContent=fmt(catBudget(c)));
+  document.getElementById('bac-total').textContent=fmt(bacTotal());
+  [1,2,3].forEach(q=>{let s=0;CATS.forEach(c=>s+=num(S.actual[q][c.k]));document.getElementById('acttot-'+q).textContent=fmt(s)});
+
+  const m=metrics(pv);
+  const sp=m.spi==null?'—':m.spi.toFixed(2), cp=m.cpi==null?'—':m.cpi.toFixed(2);
+  const setT=(id,v)=>document.getElementById(id).textContent=v;
+  setT('t-bac',fmt(m.bac)); setT('t-pv',fmt(m.pv)); setT('t-ev',fmt(m.ev)); setT('t-ac',fmt(m.ac));
+  setT('t-spi',sp); setT('t-cpi',cp);
+  setT('t-eac',m.eac==null?'—':fmt(m.eac)); setT('t-vac',m.vac==null?'—':sgn(m.vac));
+  const tone=v=>v==null?'':(v>=1?'#16a34a':v>=0.9?'#d97706':'#dc2626');
+  document.getElementById('t-spi').style.color=tone(m.spi);
+  document.getElementById('t-cpi').style.color=tone(m.cpi);
+  document.getElementById('evUsed').textContent=`${(m.evp*100).toFixed(1)}%`+((S.pct===''||S.pct==null)?' (PV rule)':' (measured)');
+
+  const cpiCls=m.cpi==null?'k-navy':(m.cpi>=1?'k-good':m.cpi>=0.9?'k-warn':'k-bad');
+  const spiCls=m.spi==null?'k-navy':(m.spi>=1?'k-good':m.spi>=0.9?'k-warn':'k-bad');
+  document.getElementById('evNote').textContent=`Period ${cur} · EV uses ${(m.evp*100).toFixed(1)}% complete · BAC AED ${fmt(m.bac)} · EAC AED ${m.eac==null?'—':fmt(m.eac)}`;
+  document.getElementById('kpis').innerHTML=[
+    tile('k-slate','Planned value (PV)',aed(m.pv),`${(pv*100).toFixed(1)}% of IPT`),
+    tile('k-teal','Earned value (EV)',aed(m.ev),`${(m.evp*100).toFixed(1)}% of IPT`),
+    tile('k-amber','Actual cost (AC)',aed(m.ac),`${(m.ac/m.bac*100).toFixed(1)}% of IPT · to period ${cur}`),
+    tile(spiCls,'SPI (EV ÷ PV)',m.spi==null?'—':m.spi.toFixed(2),m.spi>=1?'On or ahead of plan':'Behind plan'),
+    tile(cpiCls,'CPI (EV ÷ AC)',m.cpi==null?'—':m.cpi.toFixed(2),`Break-even at ${(m.ac/m.bac*100).toFixed(1)}% progress`)
+  ].join('');
+
+document.getElementById('chart').innerHTML=drawChart(m);
+
+  const timePct=PERIODS[cur-1].pv*100;
+  const catRows=CATS.map(c=>({n:c.n,b:catBudget(c),a:acCat(c)}));
+  const cb=catRows.reduce((s,r)=>s+r.b,0), ca=catRows.reduce((s,r)=>s+r.a,0);
+  const barRow=(b,a)=>{const p=b>0?a/b*100:0;return `<div class="cellbar"><div class="bar"><i class="${p>timePct?'over':''}" style="width:${Math.min(p,100).toFixed(1)}%"></i></div><span style="min-width:48px;font-weight:700">${p.toFixed(1)}%</span></div>`};
+  document.getElementById('catTable').innerHTML=
+    `<table class="tbl"><thead><tr><th>Cost type</th><th>Budget</th><th>Spent</th><th>Used</th></tr></thead><tbody>`+
+    catRows.map(r=>`<tr><td>${r.n}</td><td>${fmt(r.b)}</td><td>${fmt(r.a)}</td><td>${barRow(r.b,r.a)}</td></tr>`).join('')+
+    `<tr class="total"><td>Total</td><td>${fmt(cb)}</td><td>${fmt(ca)}</td><td>${barRow(cb,ca)}</td></tr></tbody></table>`;
+}
+
+function buildInputs(){
+  document.getElementById('budgetBody').innerHTML=
+    TRADES.map(t=>`<tr><td>${t.n}</td>${CATS.map(c=>`<td><input class="inp" type="text" inputmode="decimal" data-num="1" data-path="budget.${t.k}.${c.k}"></td>`).join('')}<td id="bac-${t.k}" style="font-weight:700"></td></tr>`).join('')+
+    `<tr class="total"><td>Total</td>${CATS.map(c=>`<td id="budcat-${c.k}"></td>`).join('')}<td id="bac-total"></td></tr>`;
+  document.getElementById('actBody').innerHTML=
+    CATS.map(c=>`<tr><td>${c.n}</td>${[1,2,3].map(q=>`<td><input class="inp" type="text" inputmode="decimal" data-num="1" data-path="actual.${q}.${c.k}"></td>`).join('')}</tr>`).join('')+
+    `<tr class="total"><td>Total</td>${[1,2,3].map(q=>`<td id="acttot-${q}"></td>`).join('')}</tr>`;
+}
+
+function fmtIn(v){if(v==null||v==='')return '';const x=parseFloat(String(v).replace(/,/g,''));return isFinite(x)?x.toLocaleString('en-US',{maximumFractionDigits:2}):''}
+function syncInputs(){
+  document.querySelectorAll('[data-path]').forEach(el=>{const v=getPath(S,el.dataset.path);el.value=el.dataset.num!==undefined?fmtIn(v):(v==null?'':v)});
+}
+
+document.addEventListener('input',e=>{
+  const p=e.target.dataset && e.target.dataset.path;
+  if(!p)return;
+  const raw=e.target.dataset.num!==undefined?e.target.value.replace(/,/g,''):e.target.value;
+  setPath(S,p,raw);
+  save();
+  render();
+});
+document.addEventListener('change',e=>{
+  if(e.target.dataset&&e.target.dataset.num!==undefined)e.target.value=fmtIn(getPath(S,e.target.dataset.path));
+});
+
+function setDriveMsg(t,tone){
+  const el=document.getElementById('driveMsg');if(!el)return;
+  el.textContent=t;
+  el.style.color=tone==='bad'?'#b91c1c':tone==='good'?'#0f766e':'#64748b';
+}
+function driveErr(e){
+  const c=(e&&(e.code||e.name))||'';
+  if(c==='unavailable')return e.message;
+  if(c==='approval_required'||c==='consent_required')return 'Allow Google Drive access in the prompt, then press Save again.';
+  if(c==='selection_required')return 'Choose the Google Drive account when prompted, then press Save again.';
+  if(c==='needs_reauth')return 'Google Drive needs reconnecting in your Claude settings, then press Save again.';
+  if(c==='server_not_connected')return 'Google Drive is not connected to this account.';
+  return 'Google Drive save failed: '+((e&&e.message)||'unknown error');
+}
+async function driveServer(){
+  const mcp=window.claude&&window.claude.use?await window.claude.use('mcp'):null;
+  if(!mcp)throw {code:'unavailable',message:'Google Drive is not available in this view.'};
+  return mcp.server('Google Drive');
+}
+// Drive tools here can create files but not rewrite them, so each save is a new timestamped file.
+// Auto-save writes at most once per 15 minutes, and only after a change.
+async function driveSave(auto){
+  if(driveBusy)return;
+  driveBusy=true;
+  setDriveMsg(auto?'Auto-saving to Google Drive…':'Saving to Google Drive…','');
+  try{
+    const drive=await driveServer();
+    const stamp=new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
+    await drive.create_file({title:`${DRIVE_NAME}_${stamp}.json`,textContent:JSON.stringify(S,null,2),contentMimeType:'application/json',disableConversionToGoogleType:true});
+    driveLast=Date.now();driveDirty=false;driveOn=true;
+    localStorage.setItem('taormina-drive-on','1');
+    setDriveMsg(`Saved to Google Drive at ${new Date().toLocaleTimeString()} · auto-save on`,'good');
+  }catch(e){setDriveMsg(driveErr(e),'bad')}
+  finally{driveBusy=false}
+}
+async function driveRestore(){
+  if(driveBusy)return;
+  driveBusy=true;
+  setDriveMsg('Looking for the latest backup…','');
+  try{
+    const drive=await driveServer();
+    const res=await drive.search_files({query:`title contains '${DRIVE_NAME}' and trashed = false`,orderBy:'modifiedTime desc',pageSize:1,excludeContentSnippets:true});
+    const f=((res&&(res.files||res.items))||[])[0];
+    if(!f){setDriveMsg('No backup found in Google Drive yet.','bad');return}
+    const dl=await drive.download_file_content({fileId:f.id||f.fileId});
+    const b64=dl.content||dl.base64Content||dl.data||'';
+    const txt=new TextDecoder().decode(Uint8Array.from(atob(b64),c=>c.charCodeAt(0)));
+    const r=JSON.parse(txt);
+    if(!valid(r)){setDriveMsg('That backup file is not in the right format.','bad');return}
+    if(!r.period)r.period=1;if(!r.cutoff)r.cutoff=9;if(!r.project)r.project='Taormina Village-01';
+    S=r;
+    try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+    syncInputs();applyProject();render();
+    setDriveMsg(`Restored from ${f.title||f.name||'Google Drive backup'}`,'good');
+  }catch(e){setDriveMsg(driveErr(e),'bad')}
+  finally{driveBusy=false}
+}
+if(driveOn)setDriveMsg('Auto-save to Google Drive is on','good');
+
+function exportJson(){
+  const txt=JSON.stringify(S);
+  const btn=document.getElementById('exportBtn');
+  const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy data',2000)};
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){btn.textContent='Copy failed'}ta.remove()};
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done).catch(fallback)}else fallback();
+}
+
+document.getElementById('importFile').addEventListener('change',e=>{
+  const f=e.target.files[0];
+  e.target.value='';
+  if(!f)return;
+  f.text().then(t=>{
+    const r=JSON.parse(t);
+    if(!valid(r))throw new Error('bad');
+    S=r; if(!S.period)S.period=1; save(); syncInputs(); render();
+  }).catch(()=>alert('That file is not a valid dashboard backup.'));
+});
+
+function rpPill(v){return v==null?'<span class="rp-pill none">—</span>':`<span class="rp-pill ${v>=1?'good':v>=0.9?'warn':'bad'}">${v.toFixed(2)}</span>`}
+function rpScale(vmax,n){return Array.from({length:n+1},(_,i)=>vmax*i/n)}
+
+function rpChartA(m){
+  const W=320,H=140,pl=46,pr=8,pt=18,pb=28,iw=W-pl-pr,ih=H-pt-pb;
+  const vmax=Math.max(m.pv,m.ev,m.ac,1)*1.18;
+  const bars=[['PV',m.pv,'#9aa7b8'],['EV',m.ev,'#0d9488'],['AC',m.ac,'#d97706']];
+  let g='';
+  rpScale(vmax,4).forEach(v=>{const y=pt+ih-v/vmax*ih;g+=`<line x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e8eef4"/><text x="${pl-5}" y="${(y+3).toFixed(1)}" text-anchor="end">${Math.round(v/1000)}k</text>`});
+  const slot=iw/3;
+  bars.forEach(([l,v,c],i)=>{const bw=52,x=pl+slot*i+(slot-bw)/2,h=v/vmax*ih,y=pt+ih-h;
+    g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="3" fill="${c}"/>`;
+    g+=`<text class="v" x="${(x+bw/2).toFixed(1)}" y="${(y-5).toFixed(1)}" text-anchor="middle">${fmt(v)}</text>`;
+    g+=`<text class="l" x="${(x+bw/2).toFixed(1)}" y="${H-pb+14}" text-anchor="middle">${l}</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+}
+
+function rpChartB(m){
+  const W=320,H=140,pl=46,pr=8,pt=22,pb=28,iw=W-pl-pr,ih=H-pt-pb;
+  const vals=TRADES.map(t=>bacTrade(t.k));
+  const vmax=Math.max(...vals,1)*1.18;
+  let g='';
+  rpScale(vmax,4).forEach(v=>{const y=pt+ih-v/vmax*ih;g+=`<line x1="${pl}" x2="${W-pr}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e8eef4"/><text x="${pl-5}" y="${(y+3).toFixed(1)}" text-anchor="end">${Math.round(v/1000)}k</text>`});
+  const slot=iw/3;
+  TRADES.forEach((t,i)=>{const bw=30,gx=pl+slot*i+(slot-(2*bw+4))/2;
+    [[bacTrade(t.k),'#cbd5e1'],[bacTrade(t.k)*PERIODS[cur-1].pv,'#2f5d8c']].forEach(([v,c],j)=>{
+      const h=v/vmax*ih,x=gx+j*(bw+4),y=pt+ih-h;
+      g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="2" fill="${c}"/>`;
+      g+=`<text class="v" x="${(x+bw/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle">${Math.round(v/1000)}k</text>`});
+    g+=`<text class="l" x="${(gx+bw+2).toFixed(1)}" y="${H-pb+14}" text-anchor="middle">${t.n}</text>`});
+  g+=`<rect x="${pl}" y="2" width="9" height="9" fill="#cbd5e1"/><text class="l" x="${pl+13}" y="10">IPT budget</text><rect x="${pl+80}" y="2" width="9" height="9" fill="#2f5d8c"/><text class="l" x="${pl+93}" y="10">PV</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+}
+
+function rpChartC(m){
+  const W=320,H=140,pl=92,pr=40,pt=20,rh=24;
+  const rows=CATS.map(c=>[c.n,acCat(c)/catBudget(c)]).concat([['Total IPT',acTotal()/bacTotal()]]);
+  const vmax=0.4,iw=W-pl-pr,tx=pl+iw*(PERIODS[cur-1].pv/vmax);
+  let g=`<line x1="${tx.toFixed(1)}" x2="${tx.toFixed(1)}" y1="${pt-6}" y2="${pt+rh*rows.length}" stroke="#667085" stroke-dasharray="4 3"/><text class="l" x="${tx.toFixed(1)}" y="${pt-9}" text-anchor="middle">time elapsed ${(PERIODS[cur-1].pv*100).toFixed(0)}%</text>`;
+  rows.forEach(([n,p],i)=>{const y=pt+i*rh+5,w=iw*Math.min(p/vmax,1),col=p<=PERIODS[cur-1].pv?'#2f5d8c':'#b42318';
+    g+=`<text class="l" x="${pl-8}" y="${y+10}" text-anchor="end">${n}</text><rect x="${pl}" y="${y}" width="${iw}" height="14" rx="3" fill="#f0f2f5"/><rect x="${pl}" y="${y}" width="${w.toFixed(1)}" height="14" rx="3" fill="${col}"/><text class="v" x="${(pl+w+5).toFixed(1)}" y="${(y+10.5).toFixed(1)}">${(p*100).toFixed(1)}%</text>`});
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+}
+
+function rpChartD(m,cut){
+  const W=320,H=140,pl=50,pr=12,pt=14,pb=24,iw=W-pl-pr,ih=H-pt-pb,ymax=Math.max(m.bac*1.1,1);
+  const X=d=>pl+d/30*iw, Y=v=>pt+ih-v/ymax*ih;
+  const pace=m.ac/cut*30;
+  let g='';
+  rpScale(ymax,4).forEach(v=>{g+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="#e8eef4"/><text class="l" x="${pl-5}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end">${Math.round(v/1000)}k</text>`});
+  [[0,'1 Nov'],[10,'10'],[20,'20'],[30,'30 Nov']].forEach(([d,l])=>{g+=`<text class="l" x="${X(d).toFixed(1)}" y="${H-pb+14}" text-anchor="middle">${l}</text>`});
+  const pts=[[0,0]].concat([1,2,3].map(q=>[q*10,m.bac*(PERIODS[q-1].pv)]));
+  g+=`<polyline points="${pts.map(([d,v])=>X(d).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="#9aa7b8" stroke-width="2"/>`;
+  g+=`<line x1="${X(cut).toFixed(1)}" y1="${Y(m.ac).toFixed(1)}" x2="${X(30).toFixed(1)}" y2="${Y(pace).toFixed(1)}" stroke="#d9822b" stroke-dasharray="4 3" stroke-width="1.5"/>`;
+  g+=`<circle cx="${X(cut).toFixed(1)}" cy="${Y(m.ac).toFixed(1)}" r="4" fill="#d9822b"/><text class="v" x="${(X(cut)-6).toFixed(1)}" y="${(Y(m.ac)-8).toFixed(1)}" text-anchor="end">AC ${fmt(m.ac)}</text>`;
+  g+=`<text class="l" x="${(X(30)-4).toFixed(1)}" y="${(Y(pace)-6).toFixed(1)}" text-anchor="end">pace ${fmt(pace)}</text>`;
+  g+=`<text class="l" x="${(X(30)-4).toFixed(1)}" y="${(Y(m.bac)+12).toFixed(1)}" text-anchor="end">PV 100% ${fmt(m.bac)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+}
+
+function reportHtml(m,pv){
+  const cut=Math.min(30,Math.max(1,Math.round(num(S.cutoff))||9));
+  const measured=!(S.pct===''||S.pct==null);
+  const pace=m.ac/cut*30;
+  const bePct=m.bac>0?m.ac/m.bac*100:0;
+  const next=cur<3?PERIODS[cur]:null;
+  const issued=new Date().toLocaleDateString('en-GB');
+  const cpiCls=m.cpi==null?'neutral':(m.cpi>=1?'good':m.cpi>=0.9?'warn':'bad');
+  const spiCls=m.spi==null?'neutral':(m.spi>=1?'good':m.spi>=0.9?'warn':'bad');
+  const kpi=(cls,l,v,s)=>`<div class="rp-kpi ${cls}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  const catRows=CATS.map(c=>({n:c.n,b:catBudget(c),a:acCat(c)}));
+  const cb=bacTotal(), ca=acTotal();
+  const usedHigh=catRows.filter(r=>r.b>0&&r.a/r.b>pv).map(r=>r.n);
+  const trades=TRADES.map(t=>{const b=bacTrade(t.k);return `<tr><td>${t.n}</td><td>${fmt(b)}</td><td>${fmt(b*pv)}</td><td>${cb>0?(b/cb*100).toFixed(1)+'%':'—'}</td></tr>`}).join('');
+  const issues=[];
+  if(!measured) issues.push(['HIGH','red',`<b>SPI cannot be measured.</b> EV is set equal to PV by the period rule, so SPI reads ${m.spi==null?'—':m.spi.toFixed(2)} by construction. Schedule status is unknown until measured % complete is entered.`]);
+  if(m.cpi!=null&&m.cpi<1) issues.push(['HIGH','red',`<b>Spend exceeds value earned.</b> CPI ${m.cpi.toFixed(2)}: actual cost AED ${fmt(m.ac)} is above earned value AED ${fmt(m.ev)}.`]);
+  if(!measured&&m.cpi!=null&&m.cpi>=1) issues.push(['MED','amber',`<b>CPI ${m.cpi.toFixed(2)} needs checking.</b> Spend is ${(m.ac/m.pv*100).toFixed(0)}% of planned value. CPI stays at or above 1.00 only if measured progress reaches ${bePct.toFixed(1)}% of IPT.`]);
+  issues.push(['MED','amber',`<b>Pace risk.</b> Average spend of AED ${fmt(m.ac/cut)} per day projects about AED ${fmt(pace)} by 30 Nov (indicative, ${(pace/m.bac*100).toFixed(0)}% of IPT). Test this against site progress before the next report.`]);
+  if(usedHigh.length) issues.push(['HIGH','red',`<b>Cost types ahead of time.</b> ${usedHigh.join(', ')} ${usedHigh.length>1?'have':'has'} used more than the ${(pv*100).toFixed(1)}% of budget that time elapsed.`]);
+  issues.push(['DATA','blue',`<b>Cut-off check.</b> Report cut-off is ${cut} Nov 2026 for ${PERIODS[cur-1].label}. Confirm the cost sheet covers the same dates.`]);
+  const actions=[
+    `<b>Measure % complete per activity</b> at the ${cut} Nov cut-off and enter it in the dashboard to replace the period rule. <i>Before the next report.</i>`,
+    usedHigh.length?`<b>Review cost types ahead of time:</b> ${usedHigh.join(', ')}. Check whether materials or subcontract charges were billed ahead of installed work. <i>This week.</i>`:`<b>Cost types are within time:</b> no review needed this period. <i>Routine.</i>`,
+    `<b>Confirm the cut-off date</b> so that AC and PV use the same period. <i>Before issue.</i>`,
+    next?`<b>Next milestone, ${next.label}:</b> planned value rises to AED ${fmt(m.bac*next.pv)} (${(next.pv*100).toFixed(1)}%). Compare cumulative AC against this figure and the pace line.`:`<b>Final period:</b> planned value reaches 100% of IPT (AED ${fmt(m.bac)}). Confirm actuals are complete before closing the IPT.`,
+    `<b>Keep the cost sheet as the source</b> for AC each period so every report stays traceable.`
+  ];
+  const tagCls={red:'red',amber:'amb',blue:'blu',green:'grn'};
+  const issueHtml=issues.map(([t,c,txt])=>`<div class="rp-issue"><span class="rp-tag ${tagCls[c]}">${t}</span><div>${txt}</div></div>`).join('');
+  const actHtml=actions.map(a=>`<li>${a}</li>`).join('');
+  return `<div class="rp-wrap"><div class="rp-page">
+  <div class="rp-head">
+    <div></div>
+    <div class="rp-title"><h1>${esc(S.project||"Taormina Village-01")}</h1><div class="sub">MEP IPT Progress</div></div>
+    <div class="rp-meta">
+      <div>Reporting period: <b>${PERIODS[cur-1].label} 2026</b></div>
+      <div>PV: ${(pv*100).toFixed(1)}% of IPT</div>
+      <div>Cut-off: ${cut} Nov 2026</div>
+      <div>Issued: ${issued}</div>
+      <span class="rp-status ${measured?'good':'bad'}">${measured?'Measured progress applied':'Measurement pending'}</span>
+    </div>
+  </div>
+  <div class="rp-kpis">
+    ${kpi('navy','IPT budget (BAC)',fmt(m.bac),'Materials + installation')}
+    ${kpi('slate','Planned value (PV)',fmt(m.pv),`${(pv*100).toFixed(1)}% of IPT`)}
+    ${kpi('teal','Earned value (EV)',fmt(m.ev),measured?`${(m.evp*100).toFixed(1)}% measured`:'EV = PV (no measurement)')}
+    ${kpi('amber','Actual cost (AC)',fmt(m.ac),`${bePct.toFixed(1)}% of IPT spent`)}
+    ${kpi(spiCls,'SPI (EV ÷ PV)',m.spi==null?'—':m.spi.toFixed(2),measured?'Measured':'Not measured yet')}
+    ${kpi(cpiCls,'CPI (EV ÷ AC)',m.cpi==null?'—':m.cpi.toFixed(2),`Break-even at ${bePct.toFixed(1)}% progress`)}
+  </div>
+  <div class="rp-note">Forecast at current CPI: EAC AED ${m.eac==null?'—':fmt(m.eac)} · VAC ${m.vac==null?'—':sgn(m.vac)} AED.</div>
+  <div class="rp-row2">
+    <div class="rp-card"><h2>Earned value position, MEP combined</h2><div class="cap">PV, EV and AC for ${PERIODS[cur-1].label} (AED)</div>${rpChartA(m)}</div>
+    <div class="rp-card"><h2>Planned value by activity</h2><div class="cap">Light bars: IPT budget. Dark bars: planned value for this period.</div>${rpChartB(m)}</div>
+    <div class="rp-card"><h2>Spend by cost type, % of budget</h2><div class="cap">Dashed line = time elapsed (${(pv*100).toFixed(0)}%). Bars past it are red.</div>${rpChartC(m)}</div>
+    <div class="rp-card"><h2>Cumulative planned value vs actual</h2><div class="cap">Plan steps at each 10-day period; AC to ${cut} Nov</div>${rpChartD(m,cut)}</div>
+  </div>
+  <div class="rp-row2">
+    <div class="rp-card"><h2>Activity budget and planned value</h2>
+      <table class="rp-tbl"><thead><tr><th>Activity</th><th>IPT budget</th><th>PV = EV</th><th>Share of IPT</th></tr></thead><tbody>${trades}
+      <tr class="tot"><td>MEP combined</td><td>${fmt(cb)}</td><td>${fmt(cb*pv)}</td><td>100%</td></tr></tbody></table>
+      <div class="rp-note">Actual cost is captured for MEP combined. Per-activity actuals are not entered in this dashboard.</div>
+    </div>
+    <div class="rp-card"><h2>Cost by type, to date</h2>
+      <table class="rp-tbl"><thead><tr><th>Cost type</th><th>Budget</th><th>Spent</th><th>% used</th><th>Remaining</th></tr></thead><tbody>
+      ${catRows.map(r=>`<tr><td>${r.n}</td><td>${fmt(r.b)}</td><td>${fmt(r.a)}</td><td>${pctOf(r.a,r.b)}</td><td>${fmt(r.b-r.a)}</td></tr>`).join('')}
+      <tr class="tot"><td>Total</td><td>${fmt(cb)}</td><td>${fmt(ca)}</td><td>${pctOf(ca,cb)}</td><td>${fmt(cb-ca)}</td></tr></tbody></table>
+    </div>
+  </div>
+  <div class="rp-row2">
+    <div class="rp-card"><h2>Issues and highlights</h2>${issueHtml}</div>
+    <div class="rp-card"><h2>Comments and actions</h2><ol class="rp-act">${actHtml}</ol></div>
+  </div>
+  <div class="rp-foot"><span>Sources: IPT Nov 2026 breakdown; MEP cost sheet. PV = BAC × planned %; EV = BAC × measured %; SPI = EV÷PV; CPI = EV÷AC.</span><span>1 of 1</span></div>
+  </div></div>`;
+}
+
+async function exportPdf(){
+  const btn=document.getElementById('pdfBtn');
+  const idle=()=>setTimeout(()=>btn.textContent='Export PDF',2500);
+  if(!window.jspdf||!window.html2canvas){btn.textContent='PDF library not loaded';idle();return}
+  let dl=null;
+  try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){dl=null}
+  if(!dl){btn.textContent='PDF not available here';idle();return}
+  const pv=PERIODS[cur-1].pv, m=metrics(pv);
+  const host=document.getElementById('rpHost');
+  host.innerHTML=reportHtml(m,pv);
+  btn.textContent='Preparing…';
+  try{
+    const page=host.querySelector('.rp-page');
+    const canvas=await window.html2canvas(page,{scale:2,backgroundColor:'#ffffff',logging:false});
+    const img=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    doc.addImage(img,'PNG',0,0,210,297,undefined,'FAST');
+    const bytes=doc.output('arraybuffer');
+    btn.textContent='Confirm save…';
+    const res=await dl.save({filename:`${(S.project||'Taormina_IPT').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_Nov2026_P${cur}.pdf`,data:bytes});
+    btn.textContent=res&&res.status==='saved'?'Saved':'Export PDF';
+  }catch(e){
+    btn.textContent=e&&e.code==='declined'?'Save cancelled':'Could not export PDF';
+  }finally{
+    host.innerHTML='';
+    idle();
+  }
+}
+
+buildInputs();
+syncInputs();
+applyProject();
+render();
+</script>
+</body>
+</html>
