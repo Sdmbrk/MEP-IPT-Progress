@@ -7,6 +7,7 @@
 <title>MEP IPT Progress</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
 :root{
   --navy:#0f2b46; --navy2:#1d4e7a; --teal:#0d9488; --teal-l:#ccfbf1; --teal-d:#0f766e;
@@ -186,6 +187,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .rp-reason{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:start;padding:4px 0;border-bottom:1px dashed #e4e7ec;font-size:9.2px;line-height:1.4}
 .rp-reason:last-child{border-bottom:none}
 .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.rp-edit{min-height:44px}
 .rp-grid>.rp-card:last-child:nth-child(odd){grid-column:1/-1}
 .rp-redbtn{display:inline-block;background:#b42318;color:#fff;border-radius:6px;padding:1px 7px;font-weight:700;font-size:8.6px;line-height:1.5;margin-right:4px}
 .rp-redhead{font-size:10.5px;padding:2px 10px;margin:0;margin-right:0}
@@ -238,17 +240,20 @@ button.btn.primary:hover{filter:brightness(1.05)}
 <div id="dashView">
 <section class="card" id="settingsCard" hidden>
   <h2>Project settings</h2>
-  <div class="hint">Change the project name shown in the header, the PDF report and the file name</div>
-  <div class="setrow">
-    <label class="field" style="flex:1;max-width:420px">Project name
-      <input class="inp" type="text" id="projInput" maxlength="80" style="max-width:none;text-align:left">
-    </label>
-    <div class="btns">
-      <button class="btn primary" onclick="saveProject()">Save</button>
-      <button class="btn" onclick="toggleSettings()">Cancel</button>
-      <button class="btn" id="clearBtn" style="color:#b42318;border-color:#b42318" onclick="clearValues()">Clear all values</button>
-    </div>
+  <div class="hint">Rename any project below. The name shows on the project buttons, the header, the PDF and the file name.</div>
+  <div id="projList" style="display:grid;gap:8px;margin-top:10px"></div>
+  <div class="btns" style="margin-top:12px">
+    <button class="btn primary" onclick="saveProject()">Save names</button>
+    <button class="btn" onclick="toggleSettings()">Cancel</button>
+    <button class="btn" id="clearBtn" style="color:#b42318;border-color:#b42318" onclick="clearValues()">Clear all values</button>
   </div>
+  <div class="hint">Clear all values empties the project that is open now.</div>
+</section>
+
+<section class="card noprint" id="projectsCard">
+  <h2>Projects</h2>
+  <div class="hint">Click a project to open it. Add a new one with + Add project.</div>
+  <div id="projTabs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
 </section>
 
 <section class="card">
@@ -427,7 +432,44 @@ let cur=1;
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function valid(r){return r&&r.v===2&&r.budget&&r.actual&&'pct' in r}
 const STORE_KEY=KEY_BASE;
-function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S))}catch(e){}}
+const MULTI_KEY='mep-ipt-projects-v3';
+let PROJECTS=[]; let ACTIVE=0;
+function persistProjects(){PROJECTS[ACTIVE]=S;try{localStorage.setItem(MULTI_KEY,JSON.stringify({v:3,active:ACTIVE,projects:PROJECTS}))}catch(e){}}
+function save(){persistProjects()}
+function renderProjects(){
+  const host=document.getElementById('projTabs'); if(!host)return;
+  host.innerHTML=PROJECTS.map((p,i)=>`<button class="btn ${i===ACTIVE?'primary':''}" onclick="switchProject(${i})">${esc(p.project||'Project')}</button>`).join('')+
+    `<button class="btn" onclick="addProject()">+ Add project</button>`;
+}
+function renderProjList(){
+  document.getElementById('projList').innerHTML=PROJECTS.map((p,i)=>`<div style="display:flex;gap:8px;align-items:center"><span class="rp-num" style="flex:0 0 22px">${i+1}</span><input class="inp" maxlength="80" style="flex:1;max-width:none;text-align:left" value="${esc(p.project||'')}" data-proj-name="${i}"><button class="btn" id="del-${i}" style="color:#b42318;border-color:#b42318" ${PROJECTS.length<2?'disabled':''} onclick="deleteProject(${i})">Delete</button></div>`).join('');
+}
+function switchProject(i){
+  persistProjects();
+  ACTIVE=Number(i); S=PROJECTS[ACTIVE];
+  if(!S.period)S.period=1; if(!S.cutoff)S.cutoff=9;
+  normNotes(); persistProjects();
+  applyProject(); syncInputs(); renderNotes(); render();
+}
+function addProject(){
+  PROJECTS.push({...BLANK(),project:'Project '+(PROJECTS.length+1)});
+  switchProject(PROJECTS.length-1);
+}
+let delArmed=-1;
+function deleteProject(i){
+  if(PROJECTS.length<2)return;
+  const btn=document.getElementById('del-'+i);
+  if(delArmed!==i){
+    delArmed=i; if(btn)btn.textContent='Confirm';
+    setTimeout(()=>{if(delArmed===i){delArmed=-1;if(btn)btn.textContent='Delete'}},4000);
+    return;
+  }
+  delArmed=-1;
+  PROJECTS.splice(i,1);
+  if(ACTIVE>=PROJECTS.length)ACTIVE=PROJECTS.length-1; else if(i<ACTIVE)ACTIVE--;
+  S=PROJECTS[ACTIVE]; normNotes(); persistProjects();
+  renderProjList(); applyProject(); syncInputs(); renderNotes(); render();
+}
 function getPath(o,p){return p.split('.').reduce((a,k)=>(a==null?undefined:a[k]),o)}
 function setPath(o,p,v){const k=p.split('.');let x=o;for(let i=0;i<k.length-1;i++)x=x[k[i]];x[k[k.length-1]]=v}
 const num=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
@@ -504,11 +546,12 @@ function applyProject(){
   const name=S.project||'Project';
   document.getElementById('projName').textContent=name;
   document.title=`${name} · MEP IPT Progress · EV Dashboard (Nov 2026)`;
+  renderProjects();
 }
 function toggleSettings(){
   const c=document.getElementById('settingsCard');
   c.hidden=!c.hidden;
-  if(!c.hidden){const i=document.getElementById('projInput');i.value=S.project||'Project';i.focus();i.select();}
+  if(!c.hidden)renderProjList();
 }
 let clearArmed=false;
 function clearValues(){
@@ -520,12 +563,14 @@ function clearValues(){
   save();applyProject();syncInputs();render();toggleSettings();
 }
 function saveProject(){
-  const v=document.getElementById('projInput').value.trim();
-  S.project=v||'Project';
-  save(); applyProject(); toggleSettings(); render();
+  document.querySelectorAll('[data-proj-name]').forEach(inp=>{
+    const i=Number(inp.dataset.projName);
+    if(PROJECTS[i])PROJECTS[i].project=inp.value.trim()||('Project '+(i+1));
+  });
+  persistProjects(); applyProject(); toggleSettings(); render();
 }
-document.getElementById('projInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter')saveProject();
+document.getElementById('settingsCard').addEventListener('keydown',e=>{
+  if(e.target.dataset&&e.target.dataset.projName!==undefined&&e.key==='Enter')saveProject();
   if(e.key==='Escape')toggleSettings();
 });
 
@@ -615,9 +660,10 @@ async function saveFile(name,bytes,mime){
 async function exportJson(){
   const btn=document.getElementById('exportBtn');
   const idle=()=>setTimeout(()=>btn.textContent='Export data',2500);
-  const txt=JSON.stringify(S,null,2);
+  persistProjects();
+  const txt=JSON.stringify({v:3,active:ACTIVE,projects:PROJECTS},null,2);
   const bytes=new TextEncoder().encode(txt);
-  const name=`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_EV_Data_${new Date().toISOString().slice(0,10)}.json`;
+  const name=`MEP_IPT_All_Projects_${PROJECTS.length}_${new Date().toISOString().slice(0,10)}.json`;
   try{
     const res=await saveFile(name,bytes,'application/json');
     btn.textContent=res&&res.status==='saved'?'Exported':'Export data';
@@ -632,8 +678,13 @@ document.getElementById('importFile').addEventListener('change',e=>{
   if(!f)return;
   f.text().then(t=>{
     const r=JSON.parse(t);
-    if(!valid(r))throw new Error('bad');
-    S=r; if(!S.period)S.period=1; normNotes(); save(); syncInputs(); renderNotes(); render();
+    let added=[];
+    if(r&&r.v===3&&Array.isArray(r.projects))added=r.projects.filter(valid);
+    else if(valid(r))added=[r];
+    if(!added.length)throw new Error('bad');
+    added.forEach(x=>{if(!x.period)x.period=1;if(!x.cutoff)x.cutoff=9;});
+    PROJECTS.push(...added);
+    switchProject(PROJECTS.length-added.length);
   }).catch(()=>alert('That file is not a valid dashboard backup.'));
 });
 
@@ -731,8 +782,8 @@ function reportHtml(m,pv){
   const numList=arr=>{const items=(arr||[]).map(x=>String(x).trim()).filter(Boolean);return `<ol class="rp-act">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`};
   const delayRows=(S.notes.delay||[]).map(x=>({t:String(x.t||'').trim(),d:String(x.d||'').trim()})).filter(x=>x.t||x.d);
   const delayList=delayRows.map((x,i)=>`<div class="rp-reason"><span class="rp-num">${i+1}</span><div><b>${esc(x.t)}</b>${x.t&&x.d?' ':''}${esc(x.d)}</div></div>`).join('');
-  const delayCard=(m.spi!=null&&m.spi<1)?`<div class="rp-card" data-sec="delay"><h2><span class="rp-redbtn rp-redhead">Delay: behind planned IPT</span></h2>${delayList}</div>`:'';
-  const overCard=(m.cpi!=null&&m.cpi<1)?`<div class="rp-card" data-sec="overspend"><h2>Overspend: spend above value earned</h2>${numList(S.notes.overspend)}</div>`:'';
+  const delayCard=(m.spi!=null&&m.spi<1)?`<div class="rp-card" data-sec="delay"><h2><span class="rp-redbtn rp-redhead">Delay: behind planned IPT</span></h2><div class="rp-edit" data-edit="delay">${delayList}</div></div>`:'';
+  const overCard=(m.cpi!=null&&m.cpi<1)?`<div class="rp-card" data-sec="overspend"><h2>Overspend: spend above value earned</h2><div class="rp-edit" data-edit="overspend">${numList(S.notes.overspend)}</div></div>`:'';
   const tagCls={red:'red',amber:'amb',blue:'blu',green:'grn'};
   const issueHtml=issues.map(([t,c,txt])=>`<div class="rp-issue"><span class="rp-tag ${tagCls[c]}">${t}</span><div>${txt}</div></div>`).join('');
   const actHtml=actions.map(a=>`<li>${a}</li>`).join('');
@@ -772,7 +823,7 @@ function reportHtml(m,pv){
     <div class="rp-card" data-sec="chartB"><h2>${plLabel()} by activity</h2><div class="cap">Light bars: Total Budget. Dark bars: planned IPT for this period.</div>${rpChartB(m)}</div>
     ${overCard}
     <div class="rp-card" data-sec="issues"><h2>Issues and highlights</h2>${issueHtml}</div>
-    <div class="rp-card" data-sec="actions"><h2>Comments and actions</h2><ol class="rp-act">${actHtml}</ol></div>
+    <div class="rp-card" data-sec="actions"><h2>Comments and actions</h2><div class="rp-edit" data-edit="actions"><ol class="rp-act">${actHtml}</ol></div></div>
   </div>
   <div class="rp-foot" data-sec="footer"><span>Sources: IPT Nov 2026 breakdown; MEP cost sheet. PV = BAC × planned %; EV = BAC × measured %; SPI = EV÷PV; CPI = EV÷AC.</span><span>1 of 1</span></div>
   </div></div>`;
@@ -794,7 +845,36 @@ async function exportPdf(){
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
     doc.addImage(img,'JPEG',0,0,210,297,undefined,'FAST');
-    const bytes=doc.output('arraybuffer');
+    let bytes=doc.output('arraybuffer');
+    if(window.PDFLib){
+      const pr=page.getBoundingClientRect(), mm=210/pr.width;
+      const boxes=[...host.querySelectorAll('[data-edit]')].map(el=>{
+        const r=el.getBoundingClientRect(), card=el.parentElement.getBoundingClientRect();
+        const top=(r.top-pr.top)*mm, bottom=(card.bottom-pr.top)*mm-1.5;
+        return {key:el.dataset.edit,x:(r.left-pr.left)*mm,y:top,w:r.width*mm,h:Math.max(10,bottom-top)};
+      });
+      const text={
+        delay:S.notes.delay.map(x=>({t:String(x.t||'').trim(),d:String(x.d||'').trim()})).filter(x=>x.t||x.d)
+              .map((x,i)=>`${i+1}. ${x.t}${x.t&&x.d?' - ':''}${x.d}`).join('\n'),
+        overspend:S.notes.overspend.map(x=>String(x).trim()).filter(Boolean).map((x,i)=>`${i+1}. ${x}`).join('\n'),
+        actions:Array.from(host.querySelectorAll('[data-edit=actions] li')).map((li,i)=>`${i+1}. ${li.textContent.trim()}`).join('\n')
+      };
+      const pdfDoc=await PDFLib.PDFDocument.load(bytes);
+      const form=pdfDoc.getForm();
+      const font=await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+      const pdfPage=pdfDoc.getPage(0), H=pdfPage.getHeight(), k=72/25.4;
+      boxes.forEach(b=>{
+        const f=form.createTextField('edit_'+b.key);
+        f.enableMultiline();
+        f.addToPage(pdfPage,{x:b.x*k,y:H-(b.y+b.h)*k,width:b.w*k,height:b.h*k,borderWidth:0.5,
+          borderColor:PDFLib.rgb(0.8,0.84,0.9),backgroundColor:PDFLib.rgb(1,1,1)});
+        f.acroField.setDefaultAppearance('/Helv 8 Tf 0 g');
+        f.setText(text[b.key]||'');
+      });
+      form.updateFieldAppearances(font);
+      form.acroForm.dict.set(PDFLib.PDFName.of('NeedAppearances'),PDFLib.PDFBool.True);
+      bytes=await pdfDoc.save();
+    }
     btn.textContent='Confirm save…';
     const res=await saveFile(`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_Nov2026_P${cur}.pdf`,bytes,'application/pdf');
     btn.textContent=res&&res.status==='saved'?'Saved':'Export PDF';
@@ -819,11 +899,16 @@ function togglePdfSec(k,on){
 }
 function applyPdfHide(root){root.querySelectorAll('[data-sec]').forEach(el=>{if(PDF_HIDE[el.dataset.sec])el.remove()})}
 function startup(){
-  let r=null;
-  try{
-    r=JSON.parse(localStorage.getItem(STORE_KEY)||'null');
-  }catch(e){r=null}
-  S=valid(r)?r:BLANK();
+  let stored=null;
+  try{stored=JSON.parse(localStorage.getItem(MULTI_KEY)||'null')}catch(e){stored=null}
+  if(stored&&Array.isArray(stored.projects))PROJECTS=stored.projects.filter(valid);
+  if(!PROJECTS.length){
+    let r=null;
+    try{r=JSON.parse(localStorage.getItem(STORE_KEY)||'null')}catch(e){r=null}
+    PROJECTS=[valid(r)?r:BLANK()];
+  }
+  ACTIVE=stored&&Number.isInteger(stored.active)?Math.min(Math.max(0,stored.active),PROJECTS.length-1):0;
+  S=PROJECTS[ACTIVE];
   if(!S.period)S.period=1;
   if(!S.cutoff)S.cutoff=9;
   normNotes();
