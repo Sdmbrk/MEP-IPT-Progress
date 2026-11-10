@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>Taormina Village-01 · MEP IPT Progress · EV Dashboard (Nov 2026)</title>
+<title>MEP IPT Progress</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -38,8 +38,9 @@ main{max-width:1240px;margin:0 auto;padding:22px 24px 40px}
 .card h2::before{content:"";width:9px;height:9px;border-radius:3px;background:linear-gradient(135deg,var(--teal),#34d399)}
 .card .hint{font-size:12px;color:var(--muted);margin:4px 0 14px 18px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+svg{max-width:100%;height:auto}
 .grid21{display:grid;grid-template-columns:1.25fr 1fr;gap:16px}
-@media(max-width:920px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid21{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.hero .chips{justify-self:center;align-items:center}.hero .title{order:-1}}
+@media(max-width:920px){.grid2>*,.grid21>*{min-width:0}.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid21{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.hero .chips{justify-self:center;align-items:center}.hero .title{order:-1}}
 
 /* period selector */
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -74,6 +75,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .kpi .l{font-size:11px;letter-spacing:.6px;text-transform:uppercase;opacity:.9;font-weight:600}
 .kpi .v{font-size:19px;font-weight:700;margin-top:4px;letter-spacing:-.2px;white-space:nowrap}
 .kpi .s{font-size:11px;opacity:.92;margin-top:2px}
+@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr;gap:8px}.kpi:last-child{grid-column:1/-1}.kpi{padding:9px 10px}.kpi .l{font-size:10px;letter-spacing:.3px}.kpi .v{font-size:16px;white-space:normal;overflow-wrap:anywhere}.kpi .s{font-size:10px}}
 .k-navy{background:linear-gradient(135deg,#0f2b46,#1d4e7a)}
 .k-slate{background:linear-gradient(135deg,#64748b,#94a3b8)}
 .k-teal{background:linear-gradient(135deg,#0f766e,#14b8a6)}
@@ -99,6 +101,13 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .inp{width:100%;max-width:170px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;text-align:right;color:var(--ink);background:#fff;font-family:inherit;font-variant-numeric:tabular-nums}
 .inp:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.18)}
 .tbl .inp{width:100%;max-width:118px;padding:7px 9px;font-size:13px}
+#budgetTbl{table-layout:fixed}
+#budgetTbl th,#budgetTbl td{padding:9px 6px;overflow:hidden;text-overflow:ellipsis}
+#budgetTbl .inp{max-width:none;min-width:0;padding:7px 5px;font-size:12.5px}
+#actTbl{table-layout:fixed}
+#actTbl th,#actTbl td{padding:9px 6px}
+#actTbl .inp{max-width:none;min-width:0;padding:7px 5px;font-size:12.5px}
+@media(max-width:560px){#budgetTbl{table-layout:fixed;min-width:0;width:100%}#budgetTbl col:nth-child(1){width:19%!important}#budgetTbl col:nth-child(2){width:23%!important}#budgetTbl col:nth-child(3){width:23%!important}#budgetTbl col:nth-child(4){width:16%!important}#budgetTbl col:nth-child(5){width:19%!important}#budgetTbl th{font-size:8.5px;letter-spacing:0;padding:7px 2px;white-space:normal}#budgetTbl td{padding:7px 2px;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:clip}#budgetTbl td:first-child{white-space:normal;font-size:11px}#budgetTbl td:last-child{font-weight:700}#budgetTbl .inp{min-width:0;width:100%;padding:5px 2px;font-size:10.5px;border-radius:6px}#actTbl{table-layout:fixed;min-width:0;width:100%}#actTbl col:nth-child(1){width:28%!important}#actTbl col:nth-child(2),#actTbl col:nth-child(3),#actTbl col:nth-child(4){width:24%!important}#actTbl th{font-size:8.5px;letter-spacing:0;padding:7px 2px;white-space:normal}#actTbl td{padding:7px 2px;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:clip}#actTbl td:first-child{white-space:normal;font-size:11px}#actTbl .inp{min-width:0;width:100%;padding:5px 2px;font-size:10.5px;border-radius:6px}}
 .evbox{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
 .evbox .out{background:var(--teal-l);border-radius:12px;padding:10px 16px;color:var(--teal-d)}
 .evbox .out small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;opacity:.8}
@@ -135,31 +144,31 @@ button.btn.primary:hover{filter:brightness(1.05)}
 /* PDF report (rendered off-screen for export) */
 .rp-wrap{position:fixed;left:-10000px;top:0;width:794px;height:1123px;overflow:hidden;background:#fff}
 .rp-page{width:794px;height:1123px;padding:26px 30px 20px;background:#fff;color:#1d2433;font-family:Helvetica,Arial,"Liberation Sans",sans-serif;font-size:10.4px;line-height:1.3;display:flex;flex-direction:column;gap:7px;box-sizing:border-box;overflow:hidden}
-.rp-head{background:#1d3b5c;color:#fff;border-radius:8px;padding:12px 16px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.rp-head{background:#1d3b5c;color:#fff;border-radius:8px;padding:6px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
 .rp-title{text-align:center}
-.rp-title h1{margin:0;font-size:21px;font-weight:700;white-space:nowrap}
-.rp-title .sub{font-size:12.5px;opacity:.9;margin-top:3px}
+.rp-title h1{margin:0;font-size:18px;font-weight:700;white-space:nowrap}
+.rp-title .sub{font-size:11.5px;opacity:.9;margin-top:1px}
 .rp-meta{text-align:right;font-size:10px;line-height:1.45}
 .rp-meta div{white-space:normal}
 .rp-status{display:inline-block;color:#fff;font-weight:700;padding:2px 9px;border-radius:9px;font-size:10px;margin-top:3px}
 .rp-status.good{background:#1f7a4d}.rp-status.bad{background:#b42318}
 .rp-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .rp-kpi{border:1px solid #e4e7ec;border-radius:7px;padding:7px 8px;border-top:3px solid #9aa7b8}
-.rp-kpi .l{font-size:8.6px;color:#667085;text-transform:uppercase;letter-spacing:.3px}
-.rp-kpi .v{font-size:15px;font-weight:700;margin-top:2px}
-.rp-kpi .s{font-size:9px;color:#667085;margin-top:1px}
+.rp-kpi .l{font-size:9.6px;color:#1f2937;font-weight:700;text-transform:uppercase;letter-spacing:.2px}
+.rp-kpi .v{font-size:16px;font-weight:700;margin-top:2px;color:#0f172a}
+.rp-kpi .s{font-size:9.4px;color:#374151;margin-top:1px}
 .rp-kpi.navy{border-top-color:#1d3b5c}.rp-kpi.slate{border-top-color:#9aa7b8}.rp-kpi.teal{border-top-color:#0d9488}
 .rp-kpi.amber{border-top-color:#d9822b}.rp-kpi.good{border-top-color:#1f7a4d}.rp-kpi.warn{border-top-color:#b7791f}.rp-kpi.bad{border-top-color:#b42318}.rp-kpi.neutral{border-top-color:#2f5d8c}
 .rp-kpi.good .v{color:#1f7a4d}.rp-kpi.bad .v{color:#b42318}
 .rp-note{font-size:9px;color:#667085}
 .rp-row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.rp-card{border:1px solid #e4e7ec;border-radius:7px;padding:6px 8px}
-.rp-card h2{font-size:11.5px;margin:0 0 2px;color:#1d3b5c}
-.rp-card .cap{font-size:8.8px;color:#667085;margin-bottom:2px}
+.rp-card{border:1px solid #cbd5e1;border-radius:7px;padding:6px 8px}
+.rp-card h2{font-size:13px;font-weight:700;margin:0 0 3px;color:#0f2b46;border-left:4px solid #0d9488;padding-left:7px;line-height:1.2}
+.rp-card .cap{font-size:9.6px;color:#374151;margin-bottom:2px}
 .rp-page svg{display:block}
 .rp-page svg text{font-family:Helvetica,Arial,sans-serif;fill:#1d2433}
 .rp-page svg text.v{font-size:8.6px;font-weight:700}
-.rp-page svg text.l{font-size:8px;fill:#667085}
+.rp-page svg text.l{font-size:9.4px;fill:#1f2937}
 .rp-tbl{width:100%;border-collapse:collapse;font-size:9.5px}
 .rp-tbl th{background:#f3f6fa;color:#475467;font-weight:700;text-align:right;padding:3px 5px;border-bottom:1px solid #d0d5dd;font-size:8.6px}
 .rp-tbl td{padding:3px 5px;border-bottom:1px solid #eef0f3;text-align:right;white-space:nowrap}
@@ -180,7 +189,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .chip-btn:hover{background:rgba(255,255,255,.24)}
 .setrow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
 /* key terms */
-.terms{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.terms{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .term-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;border-top:3px solid var(--c,#94a3b8)}
 .term-box .tt{font-weight:700;color:var(--navy);font-size:13px}
 .term-box .tf{font-family:ui-monospace,Consolas,"Courier New",monospace;font-size:11.5px;color:var(--teal-d);margin:4px 0 6px}
@@ -197,6 +206,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .def .val b{color:var(--navy)}
 .def p{font-size:12.5px;color:var(--muted);margin:6px 0 0}
 @media(max-width:920px){.defs{grid-template-columns:1fr}}
+@media(max-width:560px){.card h2{font-size:17px}.kpi .l{font-size:11.5px;opacity:1;font-weight:700;letter-spacing:.2px}.kpi .s{font-size:12px;opacity:1;font-weight:600}.kpi .v{font-size:18px}.evbox .out small{font-size:12px}.term-box .tm{font-size:13px}.term-box .tf{font-size:12.5px}}
 @media print{.btns,.seg,.inp,button{display:none!important}body{background:#fff}}
 </style>
 </head>
@@ -206,18 +216,19 @@ button.btn.primary:hover{filter:brightness(1.05)}
 <header class="hero">
   <div></div>
   <div class="title">
-    <h1 id="projName">Taormina Village-01</h1>
+    <h1 id="projName">Project</h1>
     <div class="sub">MEP IPT Progress</div>
   </div>
   <div class="chips">
     <span class="chip">IPT November 2026</span>
     <span class="chip" id="periodChip"></span>
-    <button class="chip-btn noprint" onclick="toggleSettings()">Project settings</button>
+    <button class="chip-btn noprint" id="settingsBtn" onclick="toggleSettings()">Project settings</button>
   </div>
 </header>
 
 <div style="height:16px"></div>
 
+<div id="dashView">
 <section class="card" id="settingsCard" hidden>
   <h2>Project settings</h2>
   <div class="hint">Change the project name shown in the header, the PDF report and the file name</div>
@@ -228,6 +239,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
     <div class="btns">
       <button class="btn primary" onclick="saveProject()">Save</button>
       <button class="btn" onclick="toggleSettings()">Cancel</button>
+      <button class="btn" id="clearBtn" style="color:#b42318;border-color:#b42318" onclick="clearValues()">Clear all values</button>
     </div>
   </div>
 </section>
@@ -246,9 +258,6 @@ button.btn.primary:hover{filter:brightness(1.05)}
       <button class="btn" id="exportBtn" onclick="exportJson()">Export data</button>
       <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
       <button class="btn primary" id="pdfBtn" onclick="exportPdf()">Export PDF</button>
-      <button class="btn" id="driveBtn" onclick="driveSave(false)" title="Save a timestamped backup to your Google Drive">Save to Google Drive</button>
-      <button class="btn" onclick="driveRestore()" title="Load the latest Google Drive backup (replaces the data on this page)">Restore from Drive</button>
-      <span id="driveMsg" style="font-size:12px;font-weight:600;align-self:center"></span>
       <input type="file" id="importFile" accept="application/json" hidden>
     </div>
   </div>
@@ -281,15 +290,17 @@ button.btn.primary:hover{filter:brightness(1.05)}
   <section class="card">
     <h2>IPT budget, November 2026</h2>
     <div class="hint">Planned cost by activity (materials, MGC + manpower, subcontractor)</div>
-    <div class="wrap"><table class="tbl">
-      <thead><tr><th>Activity</th><th>Materials</th><th>MGC + Manpower</th><th>Subcontractor</th><th>IPT budget</th></tr></thead>
+    <div class="wrap"><table class="tbl" id="budgetTbl">
+      <colgroup><col style="width:20%"><col style="width:22%"><col style="width:23%"><col style="width:15%"><col style="width:20%"></colgroup>
+      <thead><tr><th>Activity</th><th>Materials</th><th>MGC + Manpower</th><th>Sub-contr.</th><th>IPT budget</th></tr></thead>
       <tbody id="budgetBody"></tbody>
     </table></div>
   </section>
   <section class="card">
     <h2>Actual cost, MEP combined</h2>
     <div class="hint">Cumulative per 10-day period, from the cost sheet</div>
-    <div class="wrap"><table class="tbl">
+    <div class="wrap"><table class="tbl" id="actTbl">
+      <colgroup><col style="width:28%"><col style="width:24%"><col style="width:24%"><col style="width:24%"></colgroup>
       <thead><tr><th>Cost type</th><th>1–10 Nov</th><th>11–20 Nov</th><th>21–30 Nov</th></tr></thead>
       <tbody id="actBody"></tbody>
     </table></div>
@@ -366,54 +377,29 @@ button.btn.primary:hover{filter:brightness(1.05)}
 <div class="note" style="margin-top:4px">
   <b>Method.</b> PV = IPT budget × planned cumulative %. EV = IPT budget × measured % complete (defaults to PV %). AC = cumulative actual cost.
   SPI = EV ÷ PV · CPI = EV ÷ AC · SV = EV − PV · CV = EV − AC · EAC = BAC ÷ CPI · VAC = BAC − EAC.
-  Colour: green at 1.00 or above, amber from 0.90 to 0.99, red below 0.90. Data is kept in this browser only; use Copy data to keep a backup.
+  Colour: green at 1.00 or above, amber from 0.90 to 0.99, red below 0.90. Projects are saved to the app's database under each signed-in user; use Export data to keep a JSON backup.
 </div>
 
+</div>
 </main>
 
 <div id="rpHost"></div>
 <script>
-const KEY='taormina-ipt-ev-mep-v2';
+const KEY_BASE='taormina-ipt-ev-mep-v2';
+let KEY=KEY_BASE;
+let USER='';
 const TRADES=[{k:'hvac',n:'HVAC (V)'},{k:'elec',n:'Electrical (X)'},{k:'plumb',n:'Plumbing (Y)'}];
 const CATS=[{k:'mat',n:'Materials'},{k:'mgc',n:'MGC + Manpower'},{k:'sub',n:'Subcontractor'}];
 const PERIODS=[{label:'1–10 Nov',pv:1/3},{label:'11–20 Nov',pv:2/3},{label:'21–30 Nov',pv:1}];
 const zero=()=>({mat:0,mgc:0,sub:0});
-const DEFAULT={
-  v:2,
-  project:'Taormina Village-01',
-  period:1,
-  cutoff:9,
-  budget:{
-    hvac:{mat:24553,mgc:20088,sub:0},
-    elec:{mat:182972,mgc:95000,sub:128632},
-    plumb:{mat:408918,mgc:75000,sub:83000}
-  },
-  actual:{1:{mat:92058,mgc:49296,sub:41440},2:zero(),3:zero()},
-  pct:''
-};
-let S=load();
+const BLANK=()=>({v:2,project:'',period:1,cutoff:9,budget:{hvac:zero(),elec:zero(),plumb:zero()},actual:{1:zero(),2:zero(),3:zero()},pct:''});
+let S=BLANK();
 let cur=1;
 
 function clone(o){return JSON.parse(JSON.stringify(o))}
 function valid(r){return r&&r.v===2&&r.budget&&r.actual&&'pct' in r}
-function load(){
-  try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(valid(r)){if(!r.period)r.period=1;if(!r.cutoff)r.cutoff=9;if(!r.project)r.project='Taormina Village-01';return r}}catch(e){}
-  return clone(DEFAULT);
-}
-const DRIVE_NAME='Taormina_IPT_EV_Backup';
-const DRIVE_GAP=15*60*1000;
-let driveOn=localStorage.getItem('taormina-drive-on')==='1';
-let driveTimer=null, driveBusy=false, driveDirty=false, driveLast=0;
-function save(){
-  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
-  if(driveOn){driveDirty=true;scheduleDrive()}
-}
-function scheduleDrive(){
-  if(!driveOn||!driveDirty)return;
-  clearTimeout(driveTimer);
-  const wait=Math.max(5000,DRIVE_GAP-(Date.now()-driveLast));
-  driveTimer=setTimeout(()=>{if(driveBusy){scheduleDrive();return}driveSave(true)},wait);
-}
+const STORE_KEY=KEY_BASE;
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(S))}catch(e){}}
 function getPath(o,p){return p.split('.').reduce((a,k)=>(a==null?undefined:a[k]),o)}
 function setPath(o,p,v){const k=p.split('.');let x=o;for(let i=0;i<k.length-1;i++)x=x[k[i]];x[k[k.length-1]]=v}
 const num=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
@@ -467,18 +453,27 @@ function drawChart(m){
 
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function applyProject(){
-  const name=S.project||'Taormina Village-01';
+  const name=S.project||'Project';
   document.getElementById('projName').textContent=name;
   document.title=`${name} · MEP IPT Progress · EV Dashboard (Nov 2026)`;
 }
 function toggleSettings(){
   const c=document.getElementById('settingsCard');
   c.hidden=!c.hidden;
-  if(!c.hidden){const i=document.getElementById('projInput');i.value=S.project||'Taormina Village-01';i.focus();i.select();}
+  if(!c.hidden){const i=document.getElementById('projInput');i.value=S.project||'Project';i.focus();i.select();}
+}
+let clearArmed=false;
+function clearValues(){
+  const btn=document.getElementById('clearBtn');
+  if(!clearArmed){clearArmed=true;btn.textContent='Click again to clear';setTimeout(()=>{clearArmed=false;btn.textContent='Clear all values'},4000);return}
+  clearArmed=false;btn.textContent='Clear all values';
+  const name=S.project||'Project';
+  S=BLANK();S.project=name;
+  save();applyProject();syncInputs();render();toggleSettings();
 }
 function saveProject(){
   const v=document.getElementById('projInput').value.trim();
-  S.project=v||'Taormina Village-01';
+  S.project=v||'Project';
   save(); applyProject(); toggleSettings(); render();
 }
 document.getElementById('projInput').addEventListener('keydown',e=>{
@@ -517,9 +512,9 @@ function render(){
   document.getElementById('kpis').innerHTML=[
     tile('k-slate','Planned value (PV)',aed(m.pv),`${(pv*100).toFixed(1)}% of IPT`),
     tile('k-teal','Earned value (EV)',aed(m.ev),`${(m.evp*100).toFixed(1)}% of IPT`),
-    tile('k-amber','Actual cost (AC)',aed(m.ac),`${(m.ac/m.bac*100).toFixed(1)}% of IPT · to period ${cur}`),
+    tile('k-amber','Actual cost (AC)',aed(m.ac),`${m.bac>0?(m.ac/m.bac*100).toFixed(1):'0.0'}% of IPT · to period ${cur}`),
     tile(spiCls,'SPI (EV ÷ PV)',m.spi==null?'—':m.spi.toFixed(2),m.spi>=1?'On or ahead of plan':'Behind plan'),
-    tile(cpiCls,'CPI (EV ÷ AC)',m.cpi==null?'—':m.cpi.toFixed(2),`Break-even at ${(m.ac/m.bac*100).toFixed(1)}% progress`)
+    tile(cpiCls,'CPI (EV ÷ AC)',m.cpi==null?'—':m.cpi.toFixed(2),`Break-even at ${m.bac>0?(m.ac/m.bac*100).toFixed(1):'0.0'}% progress`)
   ].join('');
 
 document.getElementById('chart').innerHTML=drawChart(m);
@@ -560,65 +555,6 @@ document.addEventListener('change',e=>{
   if(e.target.dataset&&e.target.dataset.num!==undefined)e.target.value=fmtIn(getPath(S,e.target.dataset.path));
 });
 
-function setDriveMsg(t,tone){
-  const el=document.getElementById('driveMsg');if(!el)return;
-  el.textContent=t;
-  el.style.color=tone==='bad'?'#b91c1c':tone==='good'?'#0f766e':'#64748b';
-}
-function driveErr(e){
-  const c=(e&&(e.code||e.name))||'';
-  if(c==='unavailable')return e.message;
-  if(c==='approval_required'||c==='consent_required')return 'Allow Google Drive access in the prompt, then press Save again.';
-  if(c==='selection_required')return 'Choose the Google Drive account when prompted, then press Save again.';
-  if(c==='needs_reauth')return 'Google Drive needs reconnecting in your Claude settings, then press Save again.';
-  if(c==='server_not_connected')return 'Google Drive is not connected to this account.';
-  return 'Google Drive save failed: '+((e&&e.message)||'unknown error');
-}
-async function driveServer(){
-  const mcp=window.claude&&window.claude.use?await window.claude.use('mcp'):null;
-  if(!mcp)throw {code:'unavailable',message:'Google Drive is not available in this view.'};
-  return mcp.server('Google Drive');
-}
-// Drive tools here can create files but not rewrite them, so each save is a new timestamped file.
-// Auto-save writes at most once per 15 minutes, and only after a change.
-async function driveSave(auto){
-  if(driveBusy)return;
-  driveBusy=true;
-  setDriveMsg(auto?'Auto-saving to Google Drive…':'Saving to Google Drive…','');
-  try{
-    const drive=await driveServer();
-    const stamp=new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
-    await drive.create_file({title:`${DRIVE_NAME}_${stamp}.json`,textContent:JSON.stringify(S,null,2),contentMimeType:'application/json',disableConversionToGoogleType:true});
-    driveLast=Date.now();driveDirty=false;driveOn=true;
-    localStorage.setItem('taormina-drive-on','1');
-    setDriveMsg(`Saved to Google Drive at ${new Date().toLocaleTimeString()} · auto-save on`,'good');
-  }catch(e){setDriveMsg(driveErr(e),'bad')}
-  finally{driveBusy=false}
-}
-async function driveRestore(){
-  if(driveBusy)return;
-  driveBusy=true;
-  setDriveMsg('Looking for the latest backup…','');
-  try{
-    const drive=await driveServer();
-    const res=await drive.search_files({query:`title contains '${DRIVE_NAME}' and trashed = false`,orderBy:'modifiedTime desc',pageSize:1,excludeContentSnippets:true});
-    const f=((res&&(res.files||res.items))||[])[0];
-    if(!f){setDriveMsg('No backup found in Google Drive yet.','bad');return}
-    const dl=await drive.download_file_content({fileId:f.id||f.fileId});
-    const b64=dl.content||dl.base64Content||dl.data||'';
-    const txt=new TextDecoder().decode(Uint8Array.from(atob(b64),c=>c.charCodeAt(0)));
-    const r=JSON.parse(txt);
-    if(!valid(r)){setDriveMsg('That backup file is not in the right format.','bad');return}
-    if(!r.period)r.period=1;if(!r.cutoff)r.cutoff=9;if(!r.project)r.project='Taormina Village-01';
-    S=r;
-    try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
-    syncInputs();applyProject();render();
-    setDriveMsg(`Restored from ${f.title||f.name||'Google Drive backup'}`,'good');
-  }catch(e){setDriveMsg(driveErr(e),'bad')}
-  finally{driveBusy=false}
-}
-if(driveOn)setDriveMsg('Auto-save to Google Drive is on','good');
-
 async function exportJson(){
   const btn=document.getElementById('exportBtn');
   const idle=()=>setTimeout(()=>btn.textContent='Export data',2500);
@@ -627,7 +563,7 @@ async function exportJson(){
   if(!dl){btn.textContent='Export not available here';idle();return}
   const txt=JSON.stringify(S,null,2);
   const bytes=new TextEncoder().encode(txt);
-  const name=`${(S.project||'Taormina_IPT').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_EV_Data_${new Date().toISOString().slice(0,10)}.json`;
+  const name=`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_EV_Data_${new Date().toISOString().slice(0,10)}.json`;
   try{
     const res=await dl.save({filename:name,data:bytes});
     btn.textContent=res&&res.status==='saved'?'Exported':'Export data';
@@ -725,7 +661,7 @@ function reportHtml(m,pv){
   if(!measured) issues.push(['HIGH','red',`<b>SPI cannot be measured.</b> EV is set equal to PV by the period rule, so SPI reads ${m.spi==null?'—':m.spi.toFixed(2)} by construction. Schedule status is unknown until measured % complete is entered.`]);
   if(m.cpi!=null&&m.cpi<1) issues.push(['HIGH','red',`<b>Spend exceeds value earned.</b> CPI ${m.cpi.toFixed(2)}: actual cost AED ${fmt(m.ac)} is above earned value AED ${fmt(m.ev)}.`]);
   if(!measured&&m.cpi!=null&&m.cpi>=1) issues.push(['MED','amber',`<b>CPI ${m.cpi.toFixed(2)} needs checking.</b> Spend is ${(m.ac/m.pv*100).toFixed(0)}% of planned value. CPI stays at or above 1.00 only if measured progress reaches ${bePct.toFixed(1)}% of IPT.`]);
-  issues.push(['MED','amber',`<b>Pace risk.</b> Average spend of AED ${fmt(m.ac/cut)} per day projects about AED ${fmt(pace)} by 30 Nov (indicative, ${(pace/m.bac*100).toFixed(0)}% of IPT). Test this against site progress before the next report.`]);
+  issues.push(['MED','amber',`<b>Pace risk.</b> Average spend of AED ${fmt(m.ac/cut)} per day projects about AED ${fmt(pace)} by 30 Nov (indicative, ${(m.bac>0?pace/m.bac*100:0).toFixed(0)}% of IPT). Test this against site progress before the next report.`]);
   if(usedHigh.length) issues.push(['HIGH','red',`<b>Cost types ahead of time.</b> ${usedHigh.join(', ')} ${usedHigh.length>1?'have':'has'} used more than the ${(pv*100).toFixed(1)}% of budget that time elapsed.`]);
   issues.push(['DATA','blue',`<b>Cut-off check.</b> Report cut-off is ${cut} Nov 2026 for ${PERIODS[cur-1].label}. Confirm the cost sheet covers the same dates.`]);
   const actions=[
@@ -741,13 +677,10 @@ function reportHtml(m,pv){
   return `<div class="rp-wrap"><div class="rp-page">
   <div class="rp-head">
     <div></div>
-    <div class="rp-title"><h1>${esc(S.project||"Taormina Village-01")}</h1><div class="sub">MEP IPT Progress</div></div>
+    <div class="rp-title"><h1>${esc(S.project||"Project")}</h1><div class="sub">MEP IPT Progress</div></div>
     <div class="rp-meta">
       <div>Reporting period: <b>${PERIODS[cur-1].label} 2026</b></div>
       <div>PV: ${(pv*100).toFixed(1)}% of IPT</div>
-      <div>Cut-off: ${cut} Nov 2026</div>
-      <div>Issued: ${issued}</div>
-      <span class="rp-status ${measured?'good':'bad'}">${measured?'Measured progress applied':'Measurement pending'}</span>
     </div>
   </div>
   <div class="rp-kpis">
@@ -798,14 +731,14 @@ async function exportPdf(){
   btn.textContent='Preparing…';
   try{
     const page=host.querySelector('.rp-page');
-    const canvas=await window.html2canvas(page,{scale:2,backgroundColor:'#ffffff',logging:false});
-    const img=canvas.toDataURL('image/png');
+    const canvas=await window.html2canvas(page,{scale:4,letterRendering:true,backgroundColor:'#ffffff',logging:false});
+    const img=canvas.toDataURL('image/jpeg',0.85);
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    doc.addImage(img,'PNG',0,0,210,297,undefined,'FAST');
+    doc.addImage(img,'JPEG',0,0,210,297,undefined,'FAST');
     const bytes=doc.output('arraybuffer');
     btn.textContent='Confirm save…';
-    const res=await dl.save({filename:`${(S.project||'Taormina_IPT').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_Nov2026_P${cur}.pdf`,data:bytes});
+    const res=await dl.save({filename:`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_Nov2026_P${cur}.pdf`,data:bytes});
     btn.textContent=res&&res.status==='saved'?'Saved':'Export PDF';
   }catch(e){
     btn.textContent=e&&e.code==='declined'?'Save cancelled':'Could not export PDF';
@@ -815,10 +748,20 @@ async function exportPdf(){
   }
 }
 
-buildInputs();
-syncInputs();
-applyProject();
-render();
+function startup(){
+  let r=null;
+  try{
+    r=JSON.parse(localStorage.getItem(STORE_KEY)||'null');
+  }catch(e){r=null}
+  S=valid(r)?r:BLANK();
+  if(!S.period)S.period=1;
+  if(!S.cutoff)S.cutoff=9;
+  buildInputs();
+  applyProject();
+  syncInputs();
+  render();
+}
+startup();
 </script>
 </body>
 </html>
