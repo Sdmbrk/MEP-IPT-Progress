@@ -171,8 +171,8 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .rp-page svg text.v{font-size:8.6px;font-weight:700}
 .rp-page svg text.l{font-size:9.4px;fill:#1f2937}
 .rp-tbl{width:100%;border-collapse:collapse;font-size:9.5px}
-.rp-tbl th{background:#f3f6fa;color:#475467;font-weight:700;text-align:right;padding:3px 5px;border-bottom:1px solid #d0d5dd;font-size:8.6px}
-.rp-tbl td{padding:3px 5px;border-bottom:1px solid #eef0f3;text-align:right;white-space:nowrap}
+.rp-tbl th{background:#f3f6fa;color:#475467;font-weight:700;text-align:right;padding:7px 5px;border-bottom:1px solid #d0d5dd;font-size:8.6px}
+.rp-tbl td{padding:7px 5px;border-bottom:1px solid #eef0f3;text-align:right;white-space:nowrap;line-height:1.35}
 .rp-tbl th:first-child,.rp-tbl td:first-child{text-align:left}
 .rp-tbl tr.tot td{font-weight:700;background:#f7f9fb}
 .rp-pill{display:inline-block;padding:1px 6px;border-radius:8px;font-weight:700;font-size:9px;color:#fff}
@@ -189,6 +189,12 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .rp-edit{min-height:44px}
 .rp-grid>.rp-card:last-child:nth-child(odd){grid-column:1/-1}
+.rp-wrap.rp-land{width:1123px;height:794px}
+.rp-page.rp-land{width:1123px;height:794px;padding:22px 30px 16px}
+.rp-page.rp-land .rp-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+.rp-page.rp-land .rp-grid>.rp-card:last-child{grid-column:1/-1}
+.rp-page.rp-land .rp-kpis{gap:8px}
+.rp-page.rp-land .rp-kpi .v{font-size:18px}
 .rp-redbtn{display:inline-block;background:#b42318;color:#fff;border-radius:6px;padding:1px 7px;font-weight:700;font-size:8.6px;line-height:1.5;margin-right:4px}
 .rp-redhead{font-size:10.5px;padding:2px 10px;margin:0;margin-right:0}
 .rp-foot{margin-top:auto;border-top:1px solid #e4e7ec;padding-top:4px;font-size:8.2px;color:#667085;display:flex;justify-content:space-between;gap:10px}
@@ -269,6 +275,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
     <div class="btns noprint">
       <button class="btn" id="exportBtn" onclick="exportJson()">Export data</button>
       <button class="btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      <select id="pdfOrient" title="PDF page orientation" style="padding:8px 10px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;background:#fff;color:var(--ink)"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
       <button class="btn primary" id="pdfBtn" onclick="exportPdf()">Export PDF</button>
       <input type="file" id="importFile" accept="application/json" hidden>
     </div>
@@ -409,10 +416,12 @@ button.btn.primary:hover{filter:brightness(1.05)}
 </div>
 
 </div>
+  <div class="foot" id="appVer"></div>
 </main>
 
 <div id="rpHost"></div>
 <script>
+const APP_VERSION='v1.15';
 const KEY_BASE='taormina-ipt-ev-mep-v2';
 let KEY=KEY_BASE;
 let USER='';
@@ -825,10 +834,14 @@ function reportHtml(m,pv){
     <div class="rp-card" data-sec="issues"><h2>Issues and highlights</h2>${issueHtml}</div>
     <div class="rp-card" data-sec="actions"><h2>Comments and actions</h2><div class="rp-edit" data-edit="actions"><ol class="rp-act">${actHtml}</ol></div></div>
   </div>
-  <div class="rp-foot" data-sec="footer"><span>Sources: IPT Nov 2026 breakdown; MEP cost sheet. PV = BAC × planned %; EV = BAC × measured %; SPI = EV÷PV; CPI = EV÷AC.</span><span>1 of 1</span></div>
+  <div class="rp-foot" data-sec="footer"><span>Sources: IPT Nov 2026 breakdown; MEP cost sheet. PV = BAC × planned %; EV = BAC × measured %; SPI = EV÷PV; CPI = EV÷AC.</span><span>1 of 1 · ${APP_VERSION}</span></div>
   </div></div>`;
 }
 
+function pdfFit(pr,W,H){
+  const s=Math.min(W/pr.width,H/pr.height);
+  return {s,ox:(W-pr.width*s)/2,oy:(H-pr.height*s)/2};
+}
 async function exportPdf(){
   const btn=document.getElementById('pdfBtn');
   const idle=()=>setTimeout(()=>btn.textContent='Export PDF',2500);
@@ -839,19 +852,22 @@ async function exportPdf(){
   applyPdfHide(host);
   btn.textContent='Preparing…';
   try{
+    const land=document.getElementById('pdfOrient').value==='landscape';
+    if(land){host.querySelector('.rp-wrap').classList.add('rp-land');host.querySelector('.rp-page').classList.add('rp-land')}
+    const PW=land?297:210, PH=land?210:297;
     const page=host.querySelector('.rp-page');
+    const pr=page.getBoundingClientRect(), L=pdfFit(pr,PW,PH);
     const canvas=await window.html2canvas(page,{scale:4,letterRendering:true,backgroundColor:'#ffffff',logging:false});
     const img=canvas.toDataURL('image/jpeg',0.85);
     const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    doc.addImage(img,'JPEG',0,0,210,297,undefined,'FAST');
+    const doc=new jsPDF({unit:'mm',format:'a4',orientation:land?'landscape':'portrait'});
+    doc.addImage(img,'JPEG',L.ox,L.oy,pr.width*L.s,pr.height*L.s,undefined,'FAST');
     let bytes=doc.output('arraybuffer');
     if(window.PDFLib){
-      const pr=page.getBoundingClientRect(), mm=210/pr.width;
       const boxes=[...host.querySelectorAll('[data-edit]')].map(el=>{
         const r=el.getBoundingClientRect(), card=el.parentElement.getBoundingClientRect();
-        const top=(r.top-pr.top)*mm, bottom=(card.bottom-pr.top)*mm-1.5;
-        return {key:el.dataset.edit,x:(r.left-pr.left)*mm,y:top,w:r.width*mm,h:Math.max(10,bottom-top)};
+        const top=L.oy+(r.top-pr.top)*L.s, bottom=L.oy+(card.bottom-pr.top)*L.s-1.5;
+        return {key:el.dataset.edit,x:L.ox+(r.left-pr.left)*L.s,y:top,w:r.width*L.s,h:Math.max(10,bottom-top)};
       });
       const text={
         delay:S.notes.delay.map(x=>({t:String(x.t||'').trim(),d:String(x.d||'').trim()})).filter(x=>x.t||x.d)
@@ -862,13 +878,14 @@ async function exportPdf(){
       const pdfDoc=await PDFLib.PDFDocument.load(bytes);
       const form=pdfDoc.getForm();
       const font=await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-      const pdfPage=pdfDoc.getPage(0), H=pdfPage.getHeight(), k=72/25.4;
+      const pdfPage=pdfDoc.getPage(0), PTH=pdfPage.getHeight(), k=72/25.4;
+      const fs=Math.max(5,+(8*L.s/(210/794)).toFixed(1));
       boxes.forEach(b=>{
         const f=form.createTextField('edit_'+b.key);
         f.enableMultiline();
-        f.addToPage(pdfPage,{x:b.x*k,y:H-(b.y+b.h)*k,width:b.w*k,height:b.h*k,borderWidth:0.5,
+        f.addToPage(pdfPage,{x:b.x*k,y:PTH-(b.y+b.h)*k,width:b.w*k,height:b.h*k,borderWidth:0.5,
           borderColor:PDFLib.rgb(0.8,0.84,0.9),backgroundColor:PDFLib.rgb(1,1,1)});
-        f.acroField.setDefaultAppearance('/Helv 8 Tf 0 g');
+        f.acroField.setDefaultAppearance(`/Helv ${fs} Tf 0 g`);
         f.setText(text[b.key]||'');
       });
       form.updateFieldAppearances(font);
@@ -879,6 +896,7 @@ async function exportPdf(){
     btn.textContent=res&&res.status==='saved'?'Saved':'Export PDF';
   }catch(e){
     btn.textContent=e&&e.code==='declined'?'Save cancelled':'Could not export PDF';
+    console.error(e);
   }finally{
     host.innerHTML='';
     idle();
@@ -898,6 +916,7 @@ function togglePdfSec(k,on){
 }
 function applyPdfHide(root){root.querySelectorAll('[data-sec]').forEach(el=>{if(PDF_HIDE[el.dataset.sec])el.remove()})}
 function startup(){
+  document.getElementById('appVer').textContent='MEP IPT Progress · '+APP_VERSION;
   let stored=null;
   try{stored=JSON.parse(localStorage.getItem(MULTI_KEY)||'null')}catch(e){stored=null}
   if(stored&&Array.isArray(stored.projects))PROJECTS=stored.projects.filter(valid);
