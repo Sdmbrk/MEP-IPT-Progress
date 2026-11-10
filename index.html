@@ -807,8 +807,9 @@ async function exportPdf(){
 }
 
 const PDF_SECTIONS=[['kpis','Key figure tiles'],['forecast','Forecast line'],['chartA','Earned value position chart'],['chartB','Planned IPT by activity chart'],['chartC','Actual Cost chart'],['chartD','Cumulative planned IPT chart'],['budgetTbl','Total budget table'],['costTbl','Cost by type table'],['delay','Delay section (SPI below 1)'],['overspend','Overspend section (CPI below 1)'],['issues','Issues and highlights'],['actions','Comments and actions'],['footer','Sources footer']];
-let PDF_HIDE={};
-try{PDF_HIDE=JSON.parse(localStorage.getItem('mep-ipt-pdf-hide')||'{}')||{}}catch(e){PDF_HIDE={}}
+const PDF_DEFAULT_HIDE={forecast:true,chartB:true,chartD:true,budgetTbl:true};
+let PDF_HIDE={...PDF_DEFAULT_HIDE};
+try{const saved=localStorage.getItem('mep-ipt-pdf-hide');if(saved!==null)PDF_HIDE=JSON.parse(saved)||{}}catch(e){PDF_HIDE={...PDF_DEFAULT_HIDE}}
 function buildPdfSecs(){
   document.getElementById('pdfSecList').innerHTML=PDF_SECTIONS.map(([k,l])=>`<label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer"><input type="checkbox" ${PDF_HIDE[k]?'':'checked'} onchange="togglePdfSec('${k}',this.checked)"> ${l}</label>`).join('');
 }
