@@ -782,7 +782,7 @@ function reportHtml(m,pv){
   const numList=arr=>{const items=(arr||[]).map(x=>String(x).trim()).filter(Boolean);return `<ol class="rp-act">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`};
   const delayRows=(S.notes.delay||[]).map(x=>({t:String(x.t||'').trim(),d:String(x.d||'').trim()})).filter(x=>x.t||x.d);
   const delayList=delayRows.map((x,i)=>`<div class="rp-reason"><span class="rp-num">${i+1}</span><div><b>${esc(x.t)}</b>${x.t&&x.d?' ':''}${esc(x.d)}</div></div>`).join('');
-  const delayCard=(m.spi!=null&&m.spi<1)?`<div class="rp-card" data-sec="delay"><h2><span class="rp-redbtn rp-redhead">Delay: behind planned IPT</span></h2><div class="rp-edit" data-edit="delay">${delayList}</div></div>`:'';
+  const delayCard=(m.spi!=null&&m.spi<1)?`<div class="rp-card" data-sec="delay"><h2><span class="rp-redbtn rp-redhead">Delay: behind planned IPT</span></h2>${delayList}</div>`:'';
   const overCard=(m.cpi!=null&&m.cpi<1)?`<div class="rp-card" data-sec="overspend"><h2>Overspend: spend above value earned</h2><div class="rp-edit" data-edit="overspend">${numList(S.notes.overspend)}</div></div>`:'';
   const tagCls={red:'red',amber:'amb',blue:'blu',green:'grn'};
   const issueHtml=issues.map(([t,c,txt])=>`<div class="rp-issue"><span class="rp-tag ${tagCls[c]}">${t}</span><div>${txt}</div></div>`).join('');
@@ -872,7 +872,6 @@ async function exportPdf(){
         f.setText(text[b.key]||'');
       });
       form.updateFieldAppearances(font);
-      form.acroForm.dict.set(PDFLib.PDFName.of('NeedAppearances'),PDFLib.PDFBool.True);
       bytes=await pdfDoc.save();
     }
     btn.textContent='Confirm save…';
