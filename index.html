@@ -603,17 +603,23 @@ document.addEventListener('change',e=>{
   if(e.target.dataset&&e.target.dataset.num!==undefined)e.target.value=fmtIn(getPath(S,e.target.dataset.path));
 });
 
+async function saveFile(name,bytes,mime){
+  let dl=null;
+  try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){dl=null}
+  if(dl)return await dl.save({filename:name,data:bytes});
+  const url=URL.createObjectURL(new Blob([bytes],{type:mime}));
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  return {status:'saved'};
+}
 async function exportJson(){
   const btn=document.getElementById('exportBtn');
   const idle=()=>setTimeout(()=>btn.textContent='Export data',2500);
-  let dl=null;
-  try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){dl=null}
-  if(!dl){btn.textContent='Export not available here';idle();return}
   const txt=JSON.stringify(S,null,2);
   const bytes=new TextEncoder().encode(txt);
   const name=`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_EV_Data_${new Date().toISOString().slice(0,10)}.json`;
   try{
-    const res=await dl.save({filename:name,data:bytes});
+    const res=await saveFile(name,bytes,'application/json');
     btn.textContent=res&&res.status==='saved'?'Exported':'Export data';
   }catch(e){
     btn.textContent=e&&e.code==='declined'?'Export cancelled':'Could not export';
@@ -776,9 +782,6 @@ async function exportPdf(){
   const btn=document.getElementById('pdfBtn');
   const idle=()=>setTimeout(()=>btn.textContent='Export PDF',2500);
   if(!window.jspdf||!window.html2canvas){btn.textContent='PDF library not loaded';idle();return}
-  let dl=null;
-  try{dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null}catch(e){dl=null}
-  if(!dl){btn.textContent='PDF not available here';idle();return}
   const pv=PERIODS[cur-1].pv, m=metrics(pv);
   const host=document.getElementById('rpHost');
   host.innerHTML=reportHtml(m,pv);
@@ -793,7 +796,7 @@ async function exportPdf(){
     doc.addImage(img,'JPEG',0,0,210,297,undefined,'FAST');
     const bytes=doc.output('arraybuffer');
     btn.textContent='Confirm save…';
-    const res=await dl.save({filename:`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_Nov2026_P${cur}.pdf`,data:bytes});
+    const res=await saveFile(`${(S.project||'Project').replace(/[^A-Za-z0-9 _-]/g,'').trim().replace(/ +/g,'_')}_IPT_Nov2026_P${cur}.pdf`,bytes,'application/pdf');
     btn.textContent=res&&res.status==='saved'?'Saved':'Export PDF';
   }catch(e){
     btn.textContent=e&&e.code==='declined'?'Save cancelled':'Could not export PDF';
