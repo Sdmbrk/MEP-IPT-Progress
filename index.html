@@ -25,7 +25,7 @@ main{max-width:1240px;margin:0 auto;padding:22px 24px 40px}
   box-shadow:0 10px 30px rgba(15,43,70,.25)}
 .hero .title{text-align:center}
 .hero h1{margin:0;font-size:25px;font-weight:700;letter-spacing:.2px}
-.hero .sub{margin-top:4px;font-size:12px;letter-spacing:2.4px;text-transform:uppercase;opacity:.85}
+.hero .sub{margin-top:4px;font-size:12px;letter-spacing:.4px;text-transform:none;opacity:.85}
 .hero .chips{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right;font-size:12px;min-width:0}
 .chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:4px 11px;white-space:normal}
 .chip b{font-weight:700}
@@ -182,6 +182,13 @@ button.btn.primary:hover{filter:brightness(1.05)}
 .rp-tag.red{background:#b42318}.rp-tag.amb{background:#b7791f}.rp-tag.blu{background:#2f5d8c}.rp-tag.grn{background:#1f7a4d}
 .rp-act{margin:0;padding-left:15px;font-size:9.2px}
 .rp-act li{margin-bottom:3px}
+.rp-num{display:inline-block;width:16px;height:16px;line-height:16px;border-radius:50%;background:#b42318;color:#fff;font-weight:700;font-size:8.5px;text-align:center;flex:0 0 16px}
+.rp-reason{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:start;padding:4px 0;border-bottom:1px dashed #e4e7ec;font-size:9.2px;line-height:1.4}
+.rp-reason:last-child{border-bottom:none}
+.rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.rp-grid>.rp-card:last-child:nth-child(odd){grid-column:1/-1}
+.rp-redbtn{display:inline-block;background:#b42318;color:#fff;border-radius:6px;padding:1px 7px;font-weight:700;font-size:8.6px;line-height:1.5;margin-right:4px}
+.rp-redhead{font-size:10.5px;padding:2px 10px;margin:0;margin-right:0}
 .rp-foot{margin-top:auto;border-top:1px solid #e4e7ec;padding-top:4px;font-size:8.2px;color:#667085;display:flex;justify-content:space-between;gap:10px}
 
 [hidden]{display:none!important}
@@ -217,10 +224,10 @@ button.btn.primary:hover{filter:brightness(1.05)}
   <div></div>
   <div class="title">
     <h1 id="projName">Project</h1>
-    <div class="sub">MEP IPT Progress</div>
+    <div class="sub" id="subTitle">MEP IPT Progress</div>
   </div>
   <div class="chips">
-    <span class="chip">IPT November 2026</span>
+    <span class="chip" id="monthChip">IPT</span>
     <span class="chip" id="periodChip"></span>
     <button class="chip-btn noprint" id="settingsBtn" onclick="toggleSettings()">Project settings</button>
   </div>
@@ -248,9 +255,9 @@ button.btn.primary:hover{filter:brightness(1.05)}
   <h2>Reporting period</h2>
   <div class="hint">Select the 10-day period being reported. PV updates automatically.</div>
   <div class="seg">
-    <button class="pbtn" data-p="1" onclick="setPeriod(1)"><b>1–10 Nov</b><span>Planned value 33.3%</span><div class="meter"><i style="width:33.3%"></i></div></button>
-    <button class="pbtn" data-p="2" onclick="setPeriod(2)"><b>11–20 Nov</b><span>Planned value 66.7%</span><div class="meter"><i style="width:66.7%"></i></div></button>
-    <button class="pbtn" data-p="3" onclick="setPeriod(3)"><b>21–30 Nov</b><span>Planned value 100%</span><div class="meter"><i style="width:100%"></i></div></button>
+    <button class="pbtn" data-p="1" onclick="setPeriod(1)"><b>1–10 Nov</b><span>Planned IPT up to 10th · 33.3%</span><div class="meter"><i style="width:33.3%"></i></div></button>
+    <button class="pbtn" data-p="2" onclick="setPeriod(2)"><b>11–20 Nov</b><span>Planned IPT up to 20th · 66.7%</span><div class="meter"><i style="width:66.7%"></i></div></button>
+    <button class="pbtn" data-p="3" onclick="setPeriod(3)"><b>21–30 Nov</b><span>Planned IPT up to 30th · 100%</span><div class="meter"><i style="width:100%"></i></div></button>
   </div>
   <div class="toolbar">
     <div class="now" id="periodInfo"></div>
@@ -260,6 +267,22 @@ button.btn.primary:hover{filter:brightness(1.05)}
       <button class="btn primary" id="pdfBtn" onclick="exportPdf()">Export PDF</button>
       <input type="file" id="importFile" accept="application/json" hidden>
     </div>
+  </div>
+</section>
+
+<section class="card noprint" id="pdfSecCard">
+  <h2>PDF sections</h2>
+  <div class="hint">Tick the sections to include in the PDF. Your choice is saved in this browser.</div>
+  <div id="pdfSecList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:10px"></div>
+</section>
+
+<section class="card noprint" id="notesCard">
+  <div class="hint">Type one reason per row. Use + Add row for more. Delay and Overspend print as numbered points in the PDF.</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:10px">
+    <div><h2><span class="rp-redbtn rp-redhead">Delay: behind planned IPT</span></h2><div id="delayRows"></div>
+      <button class="btn" data-add="delay" style="margin-top:6px">+ Add row</button></div>
+    <div><h2>Overspend: spend above value earned</h2><div id="overRows"></div>
+      <button class="btn" data-add="overspend" style="margin-top:6px">+ Add row</button></div>
   </div>
 </section>
 
@@ -274,11 +297,11 @@ button.btn.primary:hover{filter:brightness(1.05)}
 <div class="grid21">
   <section class="card">
     <h2>Earned value trend, MEP combined</h2>
-    <div class="hint">Planned value, earned value and actual cost in AED</div>
+    <div class="hint">Planned IPT, earned value and actual cost in AED</div>
     <div class="chartbox" id="chart"></div>
   </section>
   <section class="card">
-    <h2>Spend by cost type</h2>
+    <h2>Actual Cost</h2>
     <div class="hint">Bar colour turns amber once spend runs ahead of the time elapsed (33.3%)</div>
     <div class="wrap" id="catTable"></div>
   </section>
@@ -288,11 +311,11 @@ button.btn.primary:hover{filter:brightness(1.05)}
 
 <div class="grid2">
   <section class="card">
-    <h2>IPT budget, November 2026</h2>
+    <h2 id="budgetH">Total Budget</h2>
     <div class="hint">Planned cost by activity (materials, MGC + manpower, subcontractor)</div>
     <div class="wrap"><table class="tbl" id="budgetTbl">
       <colgroup><col style="width:20%"><col style="width:22%"><col style="width:23%"><col style="width:15%"><col style="width:20%"></colgroup>
-      <thead><tr><th>Activity</th><th>Materials</th><th>MGC + Manpower</th><th>Sub-contr.</th><th>IPT budget</th></tr></thead>
+      <thead><tr><th>Activity</th><th>Materials</th><th>MGC + Manpower</th><th>Sub-contr.</th><th>Total Budget</th></tr></thead>
       <tbody id="budgetBody"></tbody>
     </table></div>
   </section>
@@ -375,7 +398,7 @@ button.btn.primary:hover{filter:brightness(1.05)}
 </section>
 
 <div class="note" style="margin-top:4px">
-  <b>Method.</b> PV = IPT budget × planned cumulative %. EV = IPT budget × measured % complete (defaults to PV %). AC = cumulative actual cost.
+  <b>Method.</b> PV = Total Budget × planned cumulative %. EV = Total Budget × measured % complete (defaults to PV %). AC = cumulative actual cost.
   SPI = EV ÷ PV · CPI = EV ÷ AC · SV = EV − PV · CV = EV − AC · EAC = BAC ÷ CPI · VAC = BAC − EAC.
   Colour: green at 1.00 or above, amber from 0.90 to 0.99, red below 0.90. Projects are saved to the app's database under each signed-in user; use Export data to keep a JSON backup.
 </div>
@@ -392,7 +415,12 @@ const TRADES=[{k:'hvac',n:'HVAC (V)'},{k:'elec',n:'Electrical (X)'},{k:'plumb',n
 const CATS=[{k:'mat',n:'Materials'},{k:'mgc',n:'MGC + Manpower'},{k:'sub',n:'Subcontractor'}];
 const PERIODS=[{label:'1–10 Nov',pv:1/3},{label:'11–20 Nov',pv:2/3},{label:'21–30 Nov',pv:1}];
 const zero=()=>({mat:0,mgc:0,sub:0});
-const BLANK=()=>({v:2,project:'',period:1,cutoff:9,budget:{hvac:zero(),elec:zero(),plumb:zero()},actual:{1:zero(),2:zero(),3:zero()},pct:''});
+function monthParts(){const d=new Date();return {short:d.toLocaleString('en-US',{month:'short'}),long:d.toLocaleString('en-US',{month:'long'}),yy:String(d.getFullYear()).slice(2),yyyy:d.getFullYear()}}
+function budgetTitle(){const m=monthParts();return `Total Budget for ${m.short}-${m.yy}`}
+function plLabel(p){return 'Planned IPT (PV) up to '+['10th','20th','30th'][((p||cur)-1)]}
+function upToLabel(p){return 'Budget up to '+['10th','20th','30th'][((p||cur)-1)]}
+function plLabelHtml(p){return 'Planned IPT (PV)<br>up to '+['10th','20th','30th'][((p||cur)-1)]}
+const BLANK=()=>({v:2,project:'',period:1,cutoff:9,budget:{hvac:zero(),elec:zero(),plumb:zero()},actual:{1:zero(),2:zero(),3:zero()},pct:'',notes:{delay:[],overspend:[]}});
 let S=BLANK();
 let cur=1;
 
@@ -452,6 +480,26 @@ function drawChart(m){
 }
 
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function normNotes(){
+  const arr=x=>Array.isArray(x)?x:(typeof x==='string'?x.split('\n').map(z=>z.trim()).filter(Boolean):[]);
+  S.notes={
+    delay:arr(S.notes&&S.notes.delay).map(y=>typeof y==='string'?{t:y,d:''}:{t:String(y.t||''),d:String(y.d||'')}),
+    overspend:arr(S.notes&&S.notes.overspend).map(String)
+  };
+}
+function renderNotes(){
+  const rowD=(t,d,i)=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px"><span class="rp-num" style="margin-top:6px">${i+1}</span><div style="flex:1;display:grid;gap:4px"><input class="inp" style="text-align:left;font-weight:700" placeholder="Main reason" value="${esc(t)}" data-note="delay" data-field="t" data-idx="${i}"><input class="inp" style="text-align:left" placeholder="Explanation" value="${esc(d)}" data-note="delay" data-field="d" data-idx="${i}"></div><button class="btn" style="padding:4px 10px;margin-top:4px" data-del="delay" data-idx="${i}" title="Remove row">×</button></div>`;
+  const rowO=(t,i)=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><span style="width:24px;text-align:right;font-weight:700;color:#0f172a">${i+1}.</span><input class="inp" style="flex:1;text-align:left" value="${esc(t)}" data-note="overspend" data-idx="${i}"><button class="btn" style="padding:4px 10px" data-del="overspend" data-idx="${i}" title="Remove row">×</button></div>`;
+  document.getElementById('delayRows').innerHTML=S.notes.delay.map((x,i)=>rowD(x.t,x.d,i)).join('')||'<div class="hint">No rows yet.</div>';
+  document.getElementById('overRows').innerHTML=S.notes.overspend.map((t,i)=>rowO(t,i)).join('')||'<div class="hint">No rows yet.</div>';
+}
+document.addEventListener('input',e=>{const t=e.target,k=t.dataset&&t.dataset.note;if(!k)return;const i=Number(t.dataset.idx);if(t.dataset.field)S.notes[k][i][t.dataset.field]=t.value;else S.notes[k][i]=t.value;save()});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-add]');
+  if(a){const k=a.dataset.add;S.notes[k].push(k==='delay'?{t:'',d:''}:'');save();renderNotes();const ins=document.querySelectorAll(`[data-note="${k}"]${k==='delay'?'[data-field="t"]':''}`);if(ins.length)ins[ins.length-1].focus();return}
+  const d=e.target.closest('[data-del]');
+  if(d){const k=d.dataset.del;S.notes[k].splice(Number(d.dataset.idx),1);save();renderNotes()}
+});
 function applyProject(){
   const name=S.project||'Project';
   document.getElementById('projName').textContent=name;
@@ -468,7 +516,7 @@ function clearValues(){
   if(!clearArmed){clearArmed=true;btn.textContent='Click again to clear';setTimeout(()=>{clearArmed=false;btn.textContent='Clear all values'},4000);return}
   clearArmed=false;btn.textContent='Clear all values';
   const name=S.project||'Project';
-  S=BLANK();S.project=name;
+  S=BLANK();S.project=name;renderNotes();
   save();applyProject();syncInputs();render();toggleSettings();
 }
 function saveProject(){
@@ -510,7 +558,7 @@ function render(){
   const spiCls=m.spi==null?'k-navy':(m.spi>=1?'k-good':m.spi>=0.9?'k-warn':'k-bad');
   document.getElementById('evNote').textContent=`Period ${cur} · EV uses ${(m.evp*100).toFixed(1)}% complete · BAC AED ${fmt(m.bac)} · EAC AED ${m.eac==null?'—':fmt(m.eac)}`;
   document.getElementById('kpis').innerHTML=[
-    tile('k-slate','Planned value (PV)',aed(m.pv),`${(pv*100).toFixed(1)}% of IPT`),
+    tile('k-slate',plLabelHtml(),aed(m.pv),`${(pv*100).toFixed(1)}% of IPT`),
     tile('k-teal','Earned value (EV)',aed(m.ev),`${(m.evp*100).toFixed(1)}% of IPT`),
     tile('k-amber','Actual cost (AC)',aed(m.ac),`${m.bac>0?(m.ac/m.bac*100).toFixed(1):'0.0'}% of IPT · to period ${cur}`),
     tile(spiCls,'SPI (EV ÷ PV)',m.spi==null?'—':m.spi.toFixed(2),m.spi>=1?'On or ahead of plan':'Behind plan'),
@@ -579,7 +627,7 @@ document.getElementById('importFile').addEventListener('change',e=>{
   f.text().then(t=>{
     const r=JSON.parse(t);
     if(!valid(r))throw new Error('bad');
-    S=r; if(!S.period)S.period=1; save(); syncInputs(); render();
+    S=r; if(!S.period)S.period=1; normNotes(); save(); syncInputs(); renderNotes(); render();
   }).catch(()=>alert('That file is not a valid dashboard backup.'));
 });
 
@@ -613,17 +661,20 @@ function rpChartB(m){
       g+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw}" height="${h.toFixed(1)}" rx="2" fill="${c}"/>`;
       g+=`<text class="v" x="${(x+bw/2).toFixed(1)}" y="${(y-4).toFixed(1)}" text-anchor="middle">${Math.round(v/1000)}k</text>`});
     g+=`<text class="l" x="${(gx+bw+2).toFixed(1)}" y="${H-pb+14}" text-anchor="middle">${t.n}</text>`});
-  g+=`<rect x="${pl}" y="2" width="9" height="9" fill="#cbd5e1"/><text class="l" x="${pl+13}" y="10">IPT budget</text><rect x="${pl+80}" y="2" width="9" height="9" fill="#2f5d8c"/><text class="l" x="${pl+93}" y="10">PV</text>`;
+  g+=`<rect x="${pl}" y="2" width="9" height="9" fill="#cbd5e1"/><text class="l" x="${pl+13}" y="10">Total Budget</text><rect x="${pl+80}" y="2" width="9" height="9" fill="#2f5d8c"/><text class="l" x="${pl+93}" y="10">PV</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
 }
 
 function rpChartC(m){
-  const W=320,H=140,pl=92,pr=40,pt=20,rh=24;
-  const rows=CATS.map(c=>[c.n,acCat(c)/catBudget(c)]).concat([['Total IPT',acTotal()/bacTotal()]]);
-  const vmax=0.4,iw=W-pl-pr,tx=pl+iw*(PERIODS[cur-1].pv/vmax);
+  const W=410,H=150,pl=92,pr=8,pt=20,rh=24,tail=190;
+  const safe=x=>isFinite(x)?x:0;
+  const rows=CATS.map(c=>[c.n,safe(acCat(c)/catBudget(c)),acCat(c),catBudget(c)]).concat([['Total',safe(acTotal()/bacTotal()),acTotal(),bacTotal()]]);
+  const vmax=1,iw=W-pl-tail-pr,tx=pl+iw*PERIODS[cur-1].pv;
   let g=`<line x1="${tx.toFixed(1)}" x2="${tx.toFixed(1)}" y1="${pt-6}" y2="${pt+rh*rows.length}" stroke="#667085" stroke-dasharray="4 3"/><text class="l" x="${tx.toFixed(1)}" y="${pt-9}" text-anchor="middle">time elapsed ${(PERIODS[cur-1].pv*100).toFixed(0)}%</text>`;
-  rows.forEach(([n,p],i)=>{const y=pt+i*rh+5,w=iw*Math.min(p/vmax,1),col=p<=PERIODS[cur-1].pv?'#2f5d8c':'#b42318';
-    g+=`<text class="l" x="${pl-8}" y="${y+10}" text-anchor="end">${n}</text><rect x="${pl}" y="${y}" width="${iw}" height="14" rx="3" fill="#f0f2f5"/><rect x="${pl}" y="${y}" width="${w.toFixed(1)}" height="14" rx="3" fill="${col}"/><text class="v" x="${(pl+w+5).toFixed(1)}" y="${(y+10.5).toFixed(1)}">${(p*100).toFixed(1)}%</text>`});
+  rows.forEach(([n,p,amt,bud],i)=>{const isT=i===rows.length-1;const y=pt+i*rh+5+(isT?10:0),w=iw*Math.min(p/vmax,1);
+    const col=p<=PERIODS[cur-1].pv?(isT?'#0f2b46':'#2f5d8c'):'#b42318';
+    if(isT)g+=`<line x1="0" x2="${W}" y1="${(y-4).toFixed(1)}" y2="${(y-4).toFixed(1)}" stroke="#0f2b46" stroke-width="1.2"/>`;
+    g+=`<text class="l" x="${pl-8}" y="${y+10}" text-anchor="end"${isT?' font-weight="700" fill="#0f2b46"':''}>${isT?'TOTAL':n}</text><rect x="${pl}" y="${y}" width="${iw}" height="14" rx="3" fill="#f0f2f5"/><rect x="${pl}" y="${y}" width="${w.toFixed(1)}" height="14" rx="3" fill="${col}"/><text class="v" x="${(pl+iw+6).toFixed(1)}" y="${(y+10.5).toFixed(1)}"${isT?' font-weight="800" fill="#0f2b46"':''}>AED ${fmt(amt)} · ${(p*100).toFixed(1)}% / AED ${fmt(bud)}</text>`});
   return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
 }
 
@@ -660,7 +711,7 @@ function reportHtml(m,pv){
   const issues=[];
   if(!measured) issues.push(['HIGH','red',`<b>SPI cannot be measured.</b> EV is set equal to PV by the period rule, so SPI reads ${m.spi==null?'—':m.spi.toFixed(2)} by construction. Schedule status is unknown until measured % complete is entered.`]);
   if(m.cpi!=null&&m.cpi<1) issues.push(['HIGH','red',`<b>Spend exceeds value earned.</b> CPI ${m.cpi.toFixed(2)}: actual cost AED ${fmt(m.ac)} is above earned value AED ${fmt(m.ev)}.`]);
-  if(!measured&&m.cpi!=null&&m.cpi>=1) issues.push(['MED','amber',`<b>CPI ${m.cpi.toFixed(2)} needs checking.</b> Spend is ${(m.ac/m.pv*100).toFixed(0)}% of planned value. CPI stays at or above 1.00 only if measured progress reaches ${bePct.toFixed(1)}% of IPT.`]);
+  if(!measured&&m.cpi!=null&&m.cpi>=1) issues.push(['MED','amber',`<b>CPI ${m.cpi.toFixed(2)} needs checking.</b> Spend is ${(m.ac/m.pv*100).toFixed(0)}% of planned IPT. CPI stays at or above 1.00 only if measured progress reaches ${bePct.toFixed(1)}% of IPT.`]);
   issues.push(['MED','amber',`<b>Pace risk.</b> Average spend of AED ${fmt(m.ac/cut)} per day projects about AED ${fmt(pace)} by 30 Nov (indicative, ${(m.bac>0?pace/m.bac*100:0).toFixed(0)}% of IPT). Test this against site progress before the next report.`]);
   if(usedHigh.length) issues.push(['HIGH','red',`<b>Cost types ahead of time.</b> ${usedHigh.join(', ')} ${usedHigh.length>1?'have':'has'} used more than the ${(pv*100).toFixed(1)}% of budget that time elapsed.`]);
   issues.push(['DATA','blue',`<b>Cut-off check.</b> Report cut-off is ${cut} Nov 2026 for ${PERIODS[cur-1].label}. Confirm the cost sheet covers the same dates.`]);
@@ -668,53 +719,56 @@ function reportHtml(m,pv){
     `<b>Measure % complete per activity</b> at the ${cut} Nov cut-off and enter it in the dashboard to replace the period rule. <i>Before the next report.</i>`,
     usedHigh.length?`<b>Review cost types ahead of time:</b> ${usedHigh.join(', ')}. Check whether materials or subcontract charges were billed ahead of installed work. <i>This week.</i>`:`<b>Cost types are within time:</b> no review needed this period. <i>Routine.</i>`,
     `<b>Confirm the cut-off date</b> so that AC and PV use the same period. <i>Before issue.</i>`,
-    next?`<b>Next milestone, ${next.label}:</b> planned value rises to AED ${fmt(m.bac*next.pv)} (${(next.pv*100).toFixed(1)}%). Compare cumulative AC against this figure and the pace line.`:`<b>Final period:</b> planned value reaches 100% of IPT (AED ${fmt(m.bac)}). Confirm actuals are complete before closing the IPT.`,
+    next?`<b>Next milestone, ${next.label}:</b> planned IPT rises to AED ${fmt(m.bac*next.pv)} (${(next.pv*100).toFixed(1)}%). Compare cumulative AC against this figure and the pace line.`:`<b>Final period:</b> planned IPT reaches 100% of IPT (AED ${fmt(m.bac)}). Confirm actuals are complete before closing the IPT.`,
     `<b>Keep the cost sheet as the source</b> for AC each period so every report stays traceable.`
   ];
+  const numList=arr=>{const items=(arr||[]).map(x=>String(x).trim()).filter(Boolean);return `<ol class="rp-act">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`};
+  const delayRows=(S.notes.delay||[]).map(x=>({t:String(x.t||'').trim(),d:String(x.d||'').trim()})).filter(x=>x.t||x.d);
+  const delayList=delayRows.map((x,i)=>`<div class="rp-reason"><span class="rp-num">${i+1}</span><div><b>${esc(x.t)}</b>${x.t&&x.d?' ':''}${esc(x.d)}</div></div>`).join('');
+  const delayCard=(m.spi!=null&&m.spi<1)?`<div class="rp-card" data-sec="delay"><h2><span class="rp-redbtn rp-redhead">Delay: behind planned IPT</span></h2>${delayList}</div>`:'';
+  const overCard=(m.cpi!=null&&m.cpi<1)?`<div class="rp-card" data-sec="overspend"><h2>Overspend: spend above value earned</h2>${numList(S.notes.overspend)}</div>`:'';
   const tagCls={red:'red',amber:'amb',blue:'blu',green:'grn'};
   const issueHtml=issues.map(([t,c,txt])=>`<div class="rp-issue"><span class="rp-tag ${tagCls[c]}">${t}</span><div>${txt}</div></div>`).join('');
   const actHtml=actions.map(a=>`<li>${a}</li>`).join('');
   return `<div class="rp-wrap"><div class="rp-page">
   <div class="rp-head">
     <div></div>
-    <div class="rp-title"><h1>${esc(S.project||"Project")}</h1><div class="sub">MEP IPT Progress</div></div>
+    <div class="rp-title"><h1>${esc(S.project||"Project")}</h1><div class="sub">MEP IPT Progress · ${monthParts().long} ${monthParts().yyyy}</div></div>
     <div class="rp-meta">
       <div>Reporting period: <b>${PERIODS[cur-1].label} 2026</b></div>
       <div>PV: ${(pv*100).toFixed(1)}% of IPT</div>
     </div>
   </div>
-  <div class="rp-kpis">
-    ${kpi('navy','IPT budget (BAC)',fmt(m.bac),'Materials + installation')}
-    ${kpi('slate','Planned value (PV)',fmt(m.pv),`${(pv*100).toFixed(1)}% of IPT`)}
+  <div class="rp-kpis" data-sec="kpis">
+    ${kpi('navy',budgetTitle()+' (BAC)',fmt(m.bac),'Materials + installation')}
+    ${kpi('slate',plLabelHtml(),fmt(m.pv),`${(pv*100).toFixed(1)}% of IPT`)}
     ${kpi('teal','Earned value (EV)',fmt(m.ev),measured?`${(m.evp*100).toFixed(1)}% measured`:'EV = PV (no measurement)')}
     ${kpi('amber','Actual cost (AC)',fmt(m.ac),`${bePct.toFixed(1)}% of IPT spent`)}
     ${kpi(spiCls,'SPI (EV ÷ PV)',m.spi==null?'—':m.spi.toFixed(2),measured?'Measured':'Not measured yet')}
     ${kpi(cpiCls,'CPI (EV ÷ AC)',m.cpi==null?'—':m.cpi.toFixed(2),`Break-even at ${bePct.toFixed(1)}% progress`)}
   </div>
-  <div class="rp-note">Forecast at current CPI: EAC AED ${m.eac==null?'—':fmt(m.eac)} · VAC ${m.vac==null?'—':sgn(m.vac)} AED.</div>
-  <div class="rp-row2">
-    <div class="rp-card"><h2>Earned value position, MEP combined</h2><div class="cap">PV, EV and AC for ${PERIODS[cur-1].label} (AED)</div>${rpChartA(m)}</div>
-    <div class="rp-card"><h2>Planned value by activity</h2><div class="cap">Light bars: IPT budget. Dark bars: planned value for this period.</div>${rpChartB(m)}</div>
-    <div class="rp-card"><h2>Spend by cost type, % of budget</h2><div class="cap">Dashed line = time elapsed (${(pv*100).toFixed(0)}%). Bars past it are red.</div>${rpChartC(m)}</div>
-    <div class="rp-card"><h2>Cumulative planned value vs actual</h2><div class="cap">Plan steps at each 10-day period; AC to ${cut} Nov</div>${rpChartD(m,cut)}</div>
-  </div>
-  <div class="rp-row2">
-    <div class="rp-card"><h2>Activity budget and planned value</h2>
-      <table class="rp-tbl"><thead><tr><th>Activity</th><th>IPT budget</th><th>PV = EV</th><th>Share of IPT</th></tr></thead><tbody>${trades}
+  <div class="rp-note" data-sec="forecast">Forecast at current CPI: EAC AED ${m.eac==null?'—':fmt(m.eac)} · VAC ${m.vac==null?'—':sgn(m.vac)} AED.</div>
+  <div class="rp-grid">
+    <div class="rp-card" data-sec="chartA"><h2>Earned value position, MEP combined</h2><div class="cap">PV, EV and AC for ${PERIODS[cur-1].label} (AED)</div>${rpChartA(m)}</div>
+    ${delayCard}
+    <div class="rp-card" data-sec="chartC"><h2>Actual Cost</h2><div class="cap">AED spent and % of budget. Dashed line = time elapsed (${(pv*100).toFixed(0)}%). Bars past it are red.</div>${rpChartC(m)}</div>
+    <div class="rp-card" data-sec="chartD"><h2>Cumulative planned IPT vs actual</h2><div class="cap">Plan steps at each 10-day period; AC to ${cut} Nov</div>${rpChartD(m,cut)}</div>
+    <div class="rp-card" data-sec="budgetTbl"><h2>Total budget and planned IPT</h2>
+      <table class="rp-tbl"><thead><tr><th>Activity</th><th>Total Budget</th><th>PV = EV</th><th>Share of IPT</th></tr></thead><tbody>${trades}
       <tr class="tot"><td>MEP combined</td><td>${fmt(cb)}</td><td>${fmt(cb*pv)}</td><td>100%</td></tr></tbody></table>
       <div class="rp-note">Actual cost is captured for MEP combined. Per-activity actuals are not entered in this dashboard.</div>
     </div>
-    <div class="rp-card"><h2>Cost by type, to date</h2>
-      <table class="rp-tbl"><thead><tr><th>Cost type</th><th>Budget</th><th>Spent</th><th>% used</th><th>Remaining</th></tr></thead><tbody>
-      ${catRows.map(r=>`<tr><td>${r.n}</td><td>${fmt(r.b)}</td><td>${fmt(r.a)}</td><td>${pctOf(r.a,r.b)}</td><td>${fmt(r.b-r.a)}</td></tr>`).join('')}
-      <tr class="tot"><td>Total</td><td>${fmt(cb)}</td><td>${fmt(ca)}</td><td>${pctOf(ca,cb)}</td><td>${fmt(cb-ca)}</td></tr></tbody></table>
+    <div class="rp-card" data-sec="costTbl"><h2>Cost by type, to date</h2>
+      <table class="rp-tbl"><thead><tr><th>Cost type</th><th>Full Budget</th><th>${upToLabel()}</th><th>Spent</th><th>% used</th><th>Remaining</th></tr></thead><tbody>
+      ${catRows.map(r=>`<tr><td>${r.n}</td><td>${fmt(r.b)}</td><td>${fmt(r.b*pv)}</td><td>${fmt(r.a)}</td><td>${pctOf(r.a,r.b)}</td><td>${fmt(r.b-r.a)}</td></tr>`).join('')}
+      <tr class="tot"><td>Total</td><td>${fmt(cb)}</td><td>${fmt(cb*pv)}</td><td>${fmt(ca)}</td><td>${pctOf(ca,cb)}</td><td>${fmt(cb-ca)}</td></tr></tbody></table>
     </div>
+    <div class="rp-card" data-sec="chartB"><h2>${plLabel()} by activity</h2><div class="cap">Light bars: Total Budget. Dark bars: planned IPT for this period.</div>${rpChartB(m)}</div>
+    ${overCard}
+    <div class="rp-card" data-sec="issues"><h2>Issues and highlights</h2>${issueHtml}</div>
+    <div class="rp-card" data-sec="actions"><h2>Comments and actions</h2><ol class="rp-act">${actHtml}</ol></div>
   </div>
-  <div class="rp-row2">
-    <div class="rp-card"><h2>Issues and highlights</h2>${issueHtml}</div>
-    <div class="rp-card"><h2>Comments and actions</h2><ol class="rp-act">${actHtml}</ol></div>
-  </div>
-  <div class="rp-foot"><span>Sources: IPT Nov 2026 breakdown; MEP cost sheet. PV = BAC × planned %; EV = BAC × measured %; SPI = EV÷PV; CPI = EV÷AC.</span><span>1 of 1</span></div>
+  <div class="rp-foot" data-sec="footer"><span>Sources: IPT Nov 2026 breakdown; MEP cost sheet. PV = BAC × planned %; EV = BAC × measured %; SPI = EV÷PV; CPI = EV÷AC.</span><span>1 of 1</span></div>
   </div></div>`;
 }
 
@@ -728,6 +782,7 @@ async function exportPdf(){
   const pv=PERIODS[cur-1].pv, m=metrics(pv);
   const host=document.getElementById('rpHost');
   host.innerHTML=reportHtml(m,pv);
+  applyPdfHide(host);
   btn.textContent='Preparing…';
   try{
     const page=host.querySelector('.rp-page');
@@ -748,6 +803,17 @@ async function exportPdf(){
   }
 }
 
+const PDF_SECTIONS=[['kpis','Key figure tiles'],['forecast','Forecast line'],['chartA','Earned value position chart'],['chartB','Planned IPT by activity chart'],['chartC','Actual Cost chart'],['chartD','Cumulative planned IPT chart'],['budgetTbl','Total budget table'],['costTbl','Cost by type table'],['delay','Delay section (SPI below 1)'],['overspend','Overspend section (CPI below 1)'],['issues','Issues and highlights'],['actions','Comments and actions'],['footer','Sources footer']];
+let PDF_HIDE={};
+try{PDF_HIDE=JSON.parse(localStorage.getItem('mep-ipt-pdf-hide')||'{}')||{}}catch(e){PDF_HIDE={}}
+function buildPdfSecs(){
+  document.getElementById('pdfSecList').innerHTML=PDF_SECTIONS.map(([k,l])=>`<label style="display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer"><input type="checkbox" ${PDF_HIDE[k]?'':'checked'} onchange="togglePdfSec('${k}',this.checked)"> ${l}</label>`).join('');
+}
+function togglePdfSec(k,on){
+  if(on)delete PDF_HIDE[k];else PDF_HIDE[k]=true;
+  try{localStorage.setItem('mep-ipt-pdf-hide',JSON.stringify(PDF_HIDE))}catch(e){}
+}
+function applyPdfHide(root){root.querySelectorAll('[data-sec]').forEach(el=>{if(PDF_HIDE[el.dataset.sec])el.remove()})}
 function startup(){
   let r=null;
   try{
@@ -756,9 +822,13 @@ function startup(){
   S=valid(r)?r:BLANK();
   if(!S.period)S.period=1;
   if(!S.cutoff)S.cutoff=9;
+  normNotes();
   buildInputs();
+  buildPdfSecs();
+  { const m=monthParts(); document.getElementById('budgetH').textContent=budgetTitle(); document.getElementById('monthChip').textContent=`IPT ${m.long} ${m.yyyy}`; document.getElementById('subTitle').textContent=`MEP IPT Progress · ${m.long} ${m.yyyy}`; }
   applyProject();
   syncInputs();
+  renderNotes();
   render();
 }
 startup();
